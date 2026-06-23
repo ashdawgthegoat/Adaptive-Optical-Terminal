@@ -116,10 +116,67 @@ class InitializationScreen(QWidget):
             # Wait 1 second (1000 ms) before transitioning
             QTimer.singleShot(1000, self.transition_callback)
 
+class ObserveScreen(QWidget):
+    def __init__(self, return_callback):
+        super().__init__()
 
+        self.return_callback = return_callback
+
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        title = QLabel("OBSERVE MODULE")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        title_font = QFont("Monospace", 32, QFont.Weight.Bold)
+        title_font.setStyleHint(QFont.StyleHint.TypeWriter)
+
+        title.setFont(title_font)
+        title.setStyleSheet("color: white;")
+
+        body = QLabel(
+            "Future home of:\n\n"
+            "Astronomy\n"
+            "Astrophotography\n"
+            "Wildlife Observation\n"
+            "Spectroscopy\n"
+            "Radio Astronomy"
+        )
+
+        body.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        body_font = QFont("Monospace", 16)
+        body_font.setStyleHint(QFont.StyleHint.TypeWriter)
+
+        body.setFont(body_font)
+        body.setStyleSheet("color: white;")
+
+        footer = QLabel("[ ESC ] Return")
+        footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        footer.setStyleSheet("color: gray;")
+
+        layout.addWidget(title)
+        layout.addSpacing(40)
+        layout.addWidget(body)
+        layout.addSpacing(40)
+        layout.addWidget(footer)
+
+        self.setLayout(layout)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            self.return_callback()
+        else:
+            super().keyPressEvent(event)
+            
 class MainMenuScreen(QWidget):
     def __init__(self):
         super().__init__()
+
+        self.enter_callback = None  # Placeholder for enter key callback
+
         self.menu_items = [
             "OBSERVE",
             "ARCHIVE",
@@ -189,6 +246,17 @@ class MainMenuScreen(QWidget):
             # Move down and wrap around
             self.current_selection = (self.current_selection + 1) % len(self.menu_items)
             self.update_menu()
+        elif event.key() in (
+            Qt.Key.Key_Return,
+            Qt.Key.Key_Enter
+        ):
+            if self.enter_callback:
+                self.enter_callback(
+                    self.menu_items[
+                        self.current_selection
+                    ]
+                )
+
         else:
             # Pass unhandled events to the base class
             super().keyPressEvent(event)
@@ -213,11 +281,19 @@ class MainWindow(QMainWindow):
         self.splash_screen = SplashScreen(self.transition_to_initialization)
         self.init_screen = InitializationScreen(self.transition_to_main_menu)
         self.main_menu_screen = MainMenuScreen()
+        self.observe_screen = ObserveScreen(
+            self.transition_to_main_menu
+        )
+
+        self.main_menu_screen.enter_callback = (
+            self.handle_menu_selection
+        )
 
         # Add Screens to Stack
         self.stacked_widget.addWidget(self.splash_screen)
         self.stacked_widget.addWidget(self.init_screen)
         self.stacked_widget.addWidget(self.main_menu_screen)
+        self.stacked_widget.addWidget(self.observe_screen)
 
     def transition_to_initialization(self):
         """Switches to the initialization screen and starts the logs."""
@@ -229,6 +305,14 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.main_menu_screen)
         # Give focus to the main menu screen so it can receive key events immediately
         self.main_menu_screen.setFocus()
+    
+    def handle_menu_selection(self, selected_item):
+        if selected_item == "OBSERVE":
+            self.stacked_widget.setCurrentWidget(
+                self.observe_screen
+            )
+
+            self.observe_screen.setFocus()
 
 
 if __name__ == '__main__':
