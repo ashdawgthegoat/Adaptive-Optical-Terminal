@@ -63,7 +63,6 @@ class MainWindow(QMainWindow):
 
             self.observe_screen.setFocus()
 
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()

@@ -63,9 +63,11 @@ class MainMenuScreen(QWidget):
             padded_item = self.menu_items[i].ljust(max_len)
             
             if i == self.current_selection:
-                label.setText(f"> {padded_item}")
+                label.setText(f"▶ {padded_item}")
+                label.setStyleSheet("color: white;")
             else:
                 label.setText(f"  {padded_item}")
+                label.setStyleSheet("color: gray;")
 
     def keyPressEvent(self, event):
         """Handles keyboard navigation."""
