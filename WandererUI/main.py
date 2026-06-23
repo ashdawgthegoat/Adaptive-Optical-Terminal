@@ -5,7 +5,6 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont, QPixmap
-
 class SplashScreen(QWidget):
     def __init__(self, transition_callback):
         super().__init__()
@@ -121,7 +120,21 @@ class InitializationScreen(QWidget):
 class MainMenuScreen(QWidget):
     def __init__(self):
         super().__init__()
+        self.menu_items = [
+            "OBSERVE",
+            "ARCHIVE",
+            "MUSIC",
+            "MODULES",
+            "SYSTEM"
+        ]
+        self.current_selection = 0
+        self.item_labels = []
+        
+        # Enable keyboard focus for this widget
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        
         self.init_ui()
+        self.update_menu()
 
     def init_ui(self):
         layout = QVBoxLayout()
@@ -137,28 +150,48 @@ class MainMenuScreen(QWidget):
         
         layout.addWidget(title_label)
         layout.addSpacing(60)
-
-        # Menu Items
-        menu_items = [
-            "OBSERVE",
-            "ARCHIVE",
-            "MUSIC",
-            "MODULES",
-            "SYSTEM"
-        ]
         
         menu_font = QFont("Monospace", 24)
         menu_font.setStyleHint(QFont.StyleHint.TypeWriter)
 
-        for item in menu_items:
-            item_label = QLabel(item)
+        for _ in self.menu_items:
+            item_label = QLabel()
             item_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             item_label.setFont(menu_font)
             item_label.setStyleSheet("color: white;")
+            self.item_labels.append(item_label)
             layout.addWidget(item_label)
             layout.addSpacing(20)
 
         self.setLayout(layout)
+
+    def update_menu(self):
+        """Updates the text of the menu labels to reflect the current selection."""
+        # Find the max length to pad strings, keeping them perfectly aligned
+        max_len = max(len(item) for item in self.menu_items)
+        
+        for i, label in enumerate(self.item_labels):
+            # Pad the item to ensure uniform length for perfect center alignment
+            padded_item = self.menu_items[i].ljust(max_len)
+            
+            if i == self.current_selection:
+                label.setText(f"> {padded_item}")
+            else:
+                label.setText(f"  {padded_item}")
+
+    def keyPressEvent(self, event):
+        """Handles keyboard navigation."""
+        if event.key() == Qt.Key.Key_Up:
+            # Move up and wrap around
+            self.current_selection = (self.current_selection - 1) % len(self.menu_items)
+            self.update_menu()
+        elif event.key() == Qt.Key.Key_Down:
+            # Move down and wrap around
+            self.current_selection = (self.current_selection + 1) % len(self.menu_items)
+            self.update_menu()
+        else:
+            # Pass unhandled events to the base class
+            super().keyPressEvent(event)
 
 
 class MainWindow(QMainWindow):
@@ -194,6 +227,8 @@ class MainWindow(QMainWindow):
     def transition_to_main_menu(self):
         """Switches to the main menu screen."""
         self.stacked_widget.setCurrentWidget(self.main_menu_screen)
+        # Give focus to the main menu screen so it can receive key events immediately
+        self.main_menu_screen.setFocus()
 
 
 if __name__ == '__main__':
