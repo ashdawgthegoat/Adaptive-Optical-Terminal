@@ -174,6 +174,22 @@ class AstronomyArchiveScreen(QWidget):
             ) % len(self.observations)
 
             self.update_menu()
+        
+        elif event.key() in (
+            Qt.Key.Key_Return,
+            Qt.Key.Key_Enter
+        ):
+
+            if self.enter_callback:
+
+                filepath = (
+                    "WandererUI/data/astronomy/"
+                    f"{self.observations[self.current_selection]}.json"
+                )
+
+                self.enter_callback(
+                    filepath
+                )
 
         elif event.key() == Qt.Key.Key_Escape:
 
@@ -182,3 +198,6 @@ class AstronomyArchiveScreen(QWidget):
         else:
 
             super().keyPressEvent(event)
+
+        self.enter_callback = None
+        

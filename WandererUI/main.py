@@ -14,6 +14,7 @@ from screens.astronomy_screen import AstronomyScreen
 from screens.new_observation_screen import (NewObservationScreen)
 from screens.archive_screen import ArchiveScreen
 from screens.astronomy_archive_screen import AstronomyArchiveScreen
+from screens.observation_log_screen import ObservationLogScreen
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -42,6 +43,8 @@ class MainWindow(QMainWindow):
         self.new_observation_screen = NewObservationScreen(self.transition_to_astronomy)
         self.observe_screen.enter_callback = (self.handle_observe_selection)
         self.astronomy_archive_screen = AstronomyArchiveScreen(self.transition_to_archive)
+        self.observation_log_screen = ObservationLogScreen(self.transition_to_astronomy_archive)
+        self.astronomy_archive_screen.enter_callback = (self.transition_to_observation_log)
 
         self.main_menu_screen.enter_callback = (self.handle_menu_selection)
 
@@ -54,6 +57,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.new_observation_screen)
         self.stacked_widget.addWidget(self.archive_screen)
         self.stacked_widget.addWidget(self.astronomy_archive_screen)
+        self.stacked_widget.addWidget(self.observation_log_screen)
 
     def transition_to_initialization(self):
         """Switches to the initialization screen and starts the logs."""
@@ -137,6 +141,24 @@ class MainWindow(QMainWindow):
 
     def handle_archive_selection(self, selected_item):
             self.transition_to_astronomy_archive()
+
+    def transition_to_observation_log(self,filepath):
+
+        self.observation_log_screen.load_observation(
+            filepath
+        )
+
+        self.stacked_widget.setCurrentWidget(
+            self.observation_log_screen
+        )
+
+        self.observation_log_screen.setFocus()
+
+    def open_observation_log(self,filepath):
+
+        self.transition_to_observation_log(
+            filepath
+        )
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
