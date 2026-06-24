@@ -10,6 +10,7 @@ from screens.observe_screen import ObserveScreen
 from screens.main_menu_screen import MainMenuScreen
 from screens.initialization_screen import InitializationScreen
 from screens.splash_screen import SplashScreen
+from screens.astronomy_screen import AstronomyScreen
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -30,19 +31,18 @@ class MainWindow(QMainWindow):
         self.splash_screen = SplashScreen(self.transition_to_initialization)
         self.init_screen = InitializationScreen(self.transition_to_main_menu)
         self.main_menu_screen = MainMenuScreen()
-        self.observe_screen = ObserveScreen(
-            self.transition_to_main_menu
-        )
+        self.observe_screen = ObserveScreen(self.transition_to_main_menu)
+        self.astronomy_screen = AstronomyScreen(self.transition_to_observe_menu)
+        self.observe_screen.enter_callback = (self.handle_menu_selection)
 
-        self.main_menu_screen.enter_callback = (
-            self.handle_menu_selection
-        )
+        self.main_menu_screen.enter_callback = (self.handle_menu_selection)
 
         # Add Screens to Stack
         self.stacked_widget.addWidget(self.splash_screen)
         self.stacked_widget.addWidget(self.init_screen)
         self.stacked_widget.addWidget(self.main_menu_screen)
         self.stacked_widget.addWidget(self.observe_screen)
+        self.stacked_widget.addWidget(self.astronomy_screen)
 
     def transition_to_initialization(self):
         """Switches to the initialization screen and starts the logs."""
@@ -60,8 +60,25 @@ class MainWindow(QMainWindow):
             self.stacked_widget.setCurrentWidget(
                 self.observe_screen
             )
-
+        if selected_item == "Astronomy":
+            self.transition_to_astronomy()
+            
             self.observe_screen.setFocus()
+        
+    
+    def transition_to_astronomy(self):
+        self.stacked_widget.setCurrentWidget(
+            self.astronomy_screen
+        )
+
+        self.astronomy_screen.setFocus()
+    
+    def transition_to_observe_menu(self):
+        self.stacked_widget.setCurrentWidget(
+            self.observe_screen
+        )
+
+        self.observe_screen.setFocus()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

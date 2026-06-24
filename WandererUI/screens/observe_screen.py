@@ -8,6 +8,8 @@ class ObserveScreen(QWidget):
 
         self.return_callback = return_callback
 
+        self.enter_callback = None  # Callback for when an item is selected
+
         self.menu_items = [
             "Astronomy",
             "Astrophotography",
@@ -85,14 +87,15 @@ class ObserveScreen(QWidget):
             ) % len(self.menu_items)
 
             self.update_menu()
-
+        
         elif event.key() in (
             Qt.Key.Key_Return,
             Qt.Key.Key_Enter
         ):
+            if self.enter_callback:
+                self.enter_callback(
+                    self.menu_items[self.current_selection]
+                )
 
         elif event.key() == Qt.Key.Key_Escape:
             self.return_callback()
-
-        else:
-            super().keyPressEvent(event)
