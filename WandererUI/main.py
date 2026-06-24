@@ -12,6 +12,8 @@ from screens.initialization_screen import InitializationScreen
 from screens.splash_screen import SplashScreen
 from screens.astronomy_screen import AstronomyScreen
 from screens.new_observation_screen import (NewObservationScreen)
+from screens.archive_screen import ArchiveScreen
+from screens.astronomy_archive_screen import AstronomyArchiveScreen
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -34,9 +36,12 @@ class MainWindow(QMainWindow):
         self.main_menu_screen = MainMenuScreen()
         self.observe_screen = ObserveScreen(self.transition_to_main_menu)
         self.astronomy_screen = AstronomyScreen(self.transition_to_observe_menu)
+        self.archive_screen = ArchiveScreen(self.transition_to_main_menu)
+        self.archive_screen.enter_callback = (self.handle_archive_selection)
         self.astronomy_screen.enter_callback = (self.handle_astronomy_selection)
         self.new_observation_screen = NewObservationScreen(self.transition_to_astronomy)
         self.observe_screen.enter_callback = (self.handle_observe_selection)
+        self.astronomy_archive_screen = AstronomyArchiveScreen(self.transition_to_archive)
 
         self.main_menu_screen.enter_callback = (self.handle_menu_selection)
 
@@ -47,6 +52,8 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.observe_screen)
         self.stacked_widget.addWidget(self.astronomy_screen)
         self.stacked_widget.addWidget(self.new_observation_screen)
+        self.stacked_widget.addWidget(self.archive_screen)
+        self.stacked_widget.addWidget(self.astronomy_archive_screen)
 
     def transition_to_initialization(self):
         """Switches to the initialization screen and starts the logs."""
@@ -64,6 +71,8 @@ class MainWindow(QMainWindow):
             self.stacked_widget.setCurrentWidget(
                 self.observe_screen
             )
+        elif selected_item == "ARCHIVE":
+            self.transition_to_archive()
 
     def transition_to_astronomy(self):
         self.stacked_widget.setCurrentWidget(
@@ -108,6 +117,26 @@ class MainWindow(QMainWindow):
     def handle_observe_selection(self,selected_item):
         if selected_item == "Astronomy":
             self.transition_to_astronomy()
+
+    def transition_to_archive(self):
+        self.stacked_widget.setCurrentWidget(
+            self.archive_screen
+        )
+
+        self.archive_screen.setFocus()
+    
+    def transition_to_astronomy_archive(self):
+        
+        self.astronomy_archive_screen.load_observations()
+
+        self.stacked_widget.setCurrentWidget(
+            self.astronomy_archive_screen
+        )
+
+        self.astronomy_archive_screen.setFocus()
+
+    def handle_archive_selection(self, selected_item):
+            self.transition_to_astronomy_archive()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
