@@ -11,6 +11,7 @@ from screens.main_menu_screen import MainMenuScreen
 from screens.initialization_screen import InitializationScreen
 from screens.splash_screen import SplashScreen
 from screens.astronomy_screen import AstronomyScreen
+from screens.new_observation_screen import (NewObservationScreen)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -33,7 +34,9 @@ class MainWindow(QMainWindow):
         self.main_menu_screen = MainMenuScreen()
         self.observe_screen = ObserveScreen(self.transition_to_main_menu)
         self.astronomy_screen = AstronomyScreen(self.transition_to_observe_menu)
-        self.observe_screen.enter_callback = (self.handle_menu_selection)
+        self.astronomy_screen.enter_callback = (self.handle_astronomy_selection)
+        self.new_observation_screen = NewObservationScreen(self.transition_to_astronomy)
+        self.observe_screen.enter_callback = (self.handle_observe_selection)
 
         self.main_menu_screen.enter_callback = (self.handle_menu_selection)
 
@@ -43,6 +46,7 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.main_menu_screen)
         self.stacked_widget.addWidget(self.observe_screen)
         self.stacked_widget.addWidget(self.astronomy_screen)
+        self.stacked_widget.addWidget(self.new_observation_screen)
 
     def transition_to_initialization(self):
         """Switches to the initialization screen and starts the logs."""
@@ -60,12 +64,7 @@ class MainWindow(QMainWindow):
             self.stacked_widget.setCurrentWidget(
                 self.observe_screen
             )
-        if selected_item == "Astronomy":
-            self.transition_to_astronomy()
-            
-            self.observe_screen.setFocus()
-        
-    
+
     def transition_to_astronomy(self):
         self.stacked_widget.setCurrentWidget(
             self.astronomy_screen
@@ -79,6 +78,36 @@ class MainWindow(QMainWindow):
         )
 
         self.observe_screen.setFocus()
+    
+    def transition_to_new_observation(self):
+
+        self.stacked_widget.setCurrentWidget(
+            self.new_observation_screen
+        )
+
+        QTimer.singleShot(
+            100,
+            lambda: (
+                self.new_observation_screen.name_input.setFocus(),
+                self.new_observation_screen.name_input.activateWindow()
+            )
+        )
+
+    def handle_astronomy_selection(self,selected_item):
+        if selected_item == "New Observation":
+            self.transition_to_new_observation()
+    
+    def transition_to_new_observation(self):
+
+        self.stacked_widget.setCurrentWidget(
+            self.new_observation_screen
+        )
+
+        self.new_observation_screen.setFocus()
+    
+    def handle_observe_selection(self,selected_item):
+        if selected_item == "Astronomy":
+            self.transition_to_astronomy()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
