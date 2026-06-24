@@ -1,3 +1,5 @@
+import json
+import os
 from PyQt6.QtWidgets import (
     QWidget,
     QLabel,
@@ -89,6 +91,50 @@ class NewObservationScreen(QWidget):
             self.name_input.setFocus
         )
 
+    def save_observation(self):
+
+        name = self.name_input.text().strip()
+
+        if not name:
+            return
+
+        observation = {
+            "name": name,
+            "category": "Astronomy",
+            "notes": "",
+            "media": [],
+            "metadata": {}
+        }
+
+        filepath = (
+            f"WandererUI/data/astronomy/{name}.json"
+        )
+        
+        filepath = (
+    f"WandererUI/data/astronomy/{name}.json"
+)
+
+        if os.path.exists(filepath):
+            print(
+                f"Observation already exists: {name}"
+            )
+            return
+
+        with open(
+            filepath,
+            "w"
+        ) as file:
+
+            json.dump(
+                observation,
+                file,
+                indent=4
+            )
+
+        print(
+            f"Created observation: {name}"
+        )
+
     def keyPressEvent(self, event):
 
         if event.key() == Qt.Key.Key_Escape:
@@ -99,10 +145,7 @@ class NewObservationScreen(QWidget):
             Qt.Key.Key_Enter
         ):
 
-            print(
-                "NEW OBSERVATION:",
-                self.name_input.text()
-            )
+           self.save_observation()
 
         else:
             super().keyPressEvent(event)
