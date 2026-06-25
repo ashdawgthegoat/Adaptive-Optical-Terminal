@@ -42,9 +42,8 @@ class MainWindow(QMainWindow):
         self.astronomy_screen.enter_callback = (self.handle_astronomy_selection)
         self.new_observation_screen = NewObservationScreen(self.transition_to_astronomy)
         self.observe_screen.enter_callback = (self.handle_observe_selection)
-        self.astronomy_archive_screen = AstronomyArchiveScreen(self.transition_to_archive)
+        self.astronomy_archive_screen = AstronomyArchiveScreen(self.transition_to_archive, self.transition_to_observation_log)
         self.observation_log_screen = ObservationLogScreen(self.transition_to_astronomy_archive)
-        self.astronomy_archive_screen.enter_callback = (self.transition_to_observation_log)
 
         self.main_menu_screen.enter_callback = (self.handle_menu_selection)
 
@@ -98,25 +97,16 @@ class MainWindow(QMainWindow):
             self.new_observation_screen
         )
 
+        self.new_observation_screen.name_input.clear()
+
         QTimer.singleShot(
             100,
-            lambda: (
-                self.new_observation_screen.name_input.setFocus(),
-                self.new_observation_screen.name_input.activateWindow()
-            )
+            self.new_observation_screen.name_input.setFocus
         )
 
     def handle_astronomy_selection(self,selected_item):
         if selected_item == "New Observation":
             self.transition_to_new_observation()
-    
-    def transition_to_new_observation(self):
-
-        self.stacked_widget.setCurrentWidget(
-            self.new_observation_screen
-        )
-
-        self.new_observation_screen.setFocus()
     
     def handle_observe_selection(self,selected_item):
         if selected_item == "Astronomy":
@@ -142,10 +132,10 @@ class MainWindow(QMainWindow):
     def handle_archive_selection(self, selected_item):
             self.transition_to_astronomy_archive()
 
-    def transition_to_observation_log(self,filepath):
+    def transition_to_observation_log(self, observation_name):
 
         self.observation_log_screen.load_observation(
-            filepath
+            observation_name
         )
 
         self.stacked_widget.setCurrentWidget(
@@ -153,12 +143,6 @@ class MainWindow(QMainWindow):
         )
 
         self.observation_log_screen.setFocus()
-
-    def open_observation_log(self,filepath):
-
-        self.transition_to_observation_log(
-            filepath
-        )
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

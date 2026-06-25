@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont, QPixmap
+from pathlib import Path
 
 class SplashScreen(QWidget):
     def __init__(self, transition_callback):
@@ -14,9 +15,14 @@ class SplashScreen(QWidget):
 
         logo_label = QLabel()
 
+        BASE_DIR = Path(__file__).resolve().parent.parent
+
         pixmap = QPixmap(
-            "WandererUI/assets/WandererLogo.png"
+            str(BASE_DIR / "assets" / "WandererLogo.png")
         )
+
+        if pixmap.isNull():
+            print("Error: Wanderer Logo image not found.")
 
         logo_label.setPixmap(
             pixmap.scaled(

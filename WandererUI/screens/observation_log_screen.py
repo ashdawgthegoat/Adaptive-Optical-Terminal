@@ -1,4 +1,4 @@
-import json
+from services.eidolon import Eidolon
 
 from PyQt6.QtWidgets import (
     QWidget,
@@ -74,28 +74,36 @@ class ObservationLogScreen(QWidget):
 
         self.setLayout(layout)
 
-    def load_observation(self, filepath):
+    def load_observation(
+        self,
+        observation_name
+    ):
 
-        with open(
-            filepath,
-            "r"
-        ) as file:
+        observation = (
+            Eidolon.open_observation(
+                "Astronomy",
+                observation_name
+            )
+        )
 
-            data = json.load(file)
+        if observation is None:
+
+            self.content.setText(
+                "Observation not found."
+            )
+
+            return
 
         self.content.setText(
             f"""
 Name:
-{data['name']}
+{observation['name']}
 
 Category:
-{data['category']}
+{observation['category']}
 
 Notes:
-{data['notes']}
-
-Media Files:
-{len(data['media'])}
+{observation['notes']}
 """
         )
 

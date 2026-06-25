@@ -1,4 +1,4 @@
-import os
+from services.eidolon import Eidolon
 
 from PyQt6.QtWidgets import (
     QWidget,
@@ -11,9 +11,10 @@ from PyQt6.QtGui import QFont
 
 
 class AstronomyArchiveScreen(QWidget):
-    def __init__(self, return_callback):
+    def __init__(self, return_callback, enter_callback):
         super().__init__()
-
+        
+        self.enter_callback = enter_callback
         self.return_callback = return_callback
 
         self.current_selection = 0
@@ -84,22 +85,11 @@ class AstronomyArchiveScreen(QWidget):
 
         self.item_labels.clear()
 
-        folder = (
-            "WandererUI/data/astronomy"
+        self.observations = (
+            Eidolon.get_observations(
+                "Astronomy"
+            )
         )
-
-        if os.path.exists(folder):
-
-            for file in os.listdir(folder):
-
-                if file.endswith(".json"):
-
-                    self.observations.append(
-                        file.replace(
-                            ".json",
-                            ""
-                        )
-                    )
 
         menu_font = QFont(
             "Monospace",
@@ -182,14 +172,13 @@ class AstronomyArchiveScreen(QWidget):
 
             if self.enter_callback:
 
-                filepath = (
-                    "WandererUI/data/astronomy/"
-                    f"{self.observations[self.current_selection]}.json"
+                observation_name = (
+                    self.observations[
+                        self.current_selection
+                    ]
                 )
 
-                self.enter_callback(
-                    filepath
-                )
+                self.enter_callback(observation_name)
 
         elif event.key() == Qt.Key.Key_Escape:
 
@@ -197,7 +186,4 @@ class AstronomyArchiveScreen(QWidget):
 
         else:
 
-            super().keyPressEvent(event)
-
-        self.enter_callback = None
-        
+            super().keyPressEvent(event)        

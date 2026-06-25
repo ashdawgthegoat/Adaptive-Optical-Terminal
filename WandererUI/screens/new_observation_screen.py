@@ -1,5 +1,4 @@
-import json
-import os
+from services.eidolon import Eidolon
 from PyQt6.QtWidgets import (
     QWidget,
     QLabel,
@@ -90,50 +89,39 @@ class NewObservationScreen(QWidget):
             100,
             self.name_input.setFocus
         )
-
+    
     def save_observation(self):
 
-        name = self.name_input.text().strip()
+        name = (
+            self.name_input
+            .text()
+            .strip()
+        )
 
         if not name:
             return
 
-        observation = {
-            "name": name,
-            "category": "Astronomy",
-            "notes": "",
-            "media": [],
-            "metadata": {}
-        }
-
-        filepath = (
-            f"WandererUI/data/astronomy/{name}.json"
+        success = (
+            Eidolon.create_observation(
+                "Astronomy",
+                name
+            )
         )
-        
-        filepath = (
-    f"WandererUI/data/astronomy/{name}.json"
-)
 
-        if os.path.exists(filepath):
+        if success:
+
+            print(
+                f"Created observation: {name}"
+            )
+
+            self.name_input.clear()
+            self.name_input.setFocus()
+
+        else:
+
             print(
                 f"Observation already exists: {name}"
             )
-            return
-
-        with open(
-            filepath,
-            "w"
-        ) as file:
-
-            json.dump(
-                observation,
-                file,
-                indent=4
-            )
-
-        print(
-            f"Created observation: {name}"
-        )
 
     def keyPressEvent(self, event):
 
