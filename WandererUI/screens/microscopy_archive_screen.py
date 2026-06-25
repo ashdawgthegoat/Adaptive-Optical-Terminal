@@ -1,22 +1,21 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout
+from services.eidolon import Eidolon
+
+from PyQt6.QtWidgets import (
+    QWidget,
+    QLabel,
+    QVBoxLayout
+)
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
 
-class ArchiveScreen(QWidget):
-    def __init__(self, return_callback):
+class MicroscopyArchiveScreen(QWidget):
+    def __init__(self, return_callback, enter_callback):
         super().__init__()
-
+        
+        self.enter_callback = enter_callback
         self.return_callback = return_callback
-
-        self.menu_items = [
-            "Astronomy",
-            "Astrophotography",
-            "Wildlife",
-            "Microscopy",
-            "Spectroscopy",
-            "Radio Astronomy"
-        ]
 
         self.current_selection = 0
         self.item_labels = []
@@ -30,14 +29,17 @@ class ArchiveScreen(QWidget):
             Qt.AlignmentFlag.AlignCenter
         )
 
-        title = QLabel("ARCHIVE")
+        title = QLabel(
+            "MICROSCOPY ARCHIVE"
+        )
+
         title.setAlignment(
             Qt.AlignmentFlag.AlignCenter
         )
 
         title_font = QFont(
             "Monospace",
-            32,
+            24,
             QFont.Weight.Bold
         )
 
@@ -49,24 +51,7 @@ class ArchiveScreen(QWidget):
         layout.addWidget(title)
         layout.addSpacing(40)
 
-        menu_font = QFont(
-            "Monospace",
-            16
-        )
-
-        for _ in self.menu_items:
-
-            label = QLabel()
-
-            label.setAlignment(
-                Qt.AlignmentFlag.AlignCenter
-            )
-
-            label.setFont(menu_font)
-
-            self.item_labels.append(label)
-
-            layout.addWidget(label)
+        self.menu_layout = layout
 
         footer = QLabel(
             "[ ESC ] Return"
@@ -80,16 +65,60 @@ class ArchiveScreen(QWidget):
             "color: gray;"
         )
 
+        self.footer = footer
+
         layout.addSpacing(40)
         layout.addWidget(footer)
 
         self.setLayout(layout)
 
+        self.load_observations()
+
+    def load_observations(self):
+
+        self.observations = []
+
+        self.current_selection = 0
+
+        for label in self.item_labels:
+            label.deleteLater()
+
+        self.item_labels.clear()
+
+        self.observations = (
+            Eidolon.get_observations(
+                "Microscopy"
+            )
+        )
+
+        menu_font = QFont(
+            "Monospace",
+            16
+        )
+
+        for name in self.observations:
+
+            label = QLabel()
+
+            label.setAlignment(
+                Qt.AlignmentFlag.AlignCenter
+            )
+
+            label.setFont(menu_font)
+
+            self.item_labels.append(label)
+
+            self.menu_layout.insertWidget(
+                self.menu_layout.count() - 2,
+                label
+            )
+
         self.update_menu()
 
-        self.enter_callback = None
-
     def update_menu(self):
+
+        if not self.observations:
+            return
 
         for i, label in enumerate(
             self.item_labels
@@ -98,7 +127,7 @@ class ArchiveScreen(QWidget):
             if i == self.current_selection:
 
                 label.setText(
-                    f"▶ {self.menu_items[i]}"
+                    f"▶ {self.observations[i]}"
                 )
 
                 label.setStyleSheet(
@@ -108,7 +137,7 @@ class ArchiveScreen(QWidget):
             else:
 
                 label.setText(
-                    f"  {self.menu_items[i]}"
+                    f"  {self.observations[i]}"
                 )
 
                 label.setStyleSheet(
@@ -117,11 +146,14 @@ class ArchiveScreen(QWidget):
 
     def keyPressEvent(self, event):
 
+        if not self.observations:
+            return
+
         if event.key() == Qt.Key.Key_Up:
 
             self.current_selection = (
                 self.current_selection - 1
-            ) % len(self.menu_items)
+            ) % len(self.observations)
 
             self.update_menu()
 
@@ -129,10 +161,10 @@ class ArchiveScreen(QWidget):
 
             self.current_selection = (
                 self.current_selection + 1
-            ) % len(self.menu_items)
+            ) % len(self.observations)
 
             self.update_menu()
-
+        
         elif event.key() in (
             Qt.Key.Key_Return,
             Qt.Key.Key_Enter
@@ -140,11 +172,13 @@ class ArchiveScreen(QWidget):
 
             if self.enter_callback:
 
-                self.enter_callback(
-                    self.menu_items[
+                observation_name = (
+                    self.observations[
                         self.current_selection
                     ]
                 )
+
+                self.enter_callback(observation_name)
 
         elif event.key() == Qt.Key.Key_Escape:
 

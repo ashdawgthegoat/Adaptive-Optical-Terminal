@@ -2,32 +2,30 @@ from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
-class ObserveScreen(QWidget):
+
+class AstrophotographyScreen(QWidget):
     def __init__(self, return_callback):
         super().__init__()
 
         self.return_callback = return_callback
-
-        self.enter_callback = None  # Callback for when an item is selected
-
         self.menu_items = [
-            "Astronomy",
-            "Astrophotography",
-            "Wildlife",
-            "Spectroscopy",
-            "Microscopy",
-            "Radio Astronomy"
+            "New Observation",
+            "Camera Control",
+            "Exposure Settings",
+            "Gallery"
         ]
 
         self.current_selection = 0
         self.item_labels = []
+
+        self.enter_callback = None
 
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        title = QLabel("OBSERVE MODULE")
+        title = QLabel("ASTROPHOTOGRAPHY")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         title_font = QFont("Monospace", 32, QFont.Weight.Bold)
@@ -59,10 +57,9 @@ class ObserveScreen(QWidget):
         layout.addSpacing(40)
         layout.addWidget(footer)
 
-        self.update_menu()
-
         self.setLayout(layout)
-
+        self.update_menu()
+    
     def update_menu(self):
         for i, label in enumerate(self.item_labels):
 
@@ -88,7 +85,7 @@ class ObserveScreen(QWidget):
             ) % len(self.menu_items)
 
             self.update_menu()
-        
+
         elif event.key() in (
             Qt.Key.Key_Return,
             Qt.Key.Key_Enter
@@ -100,3 +97,6 @@ class ObserveScreen(QWidget):
 
         elif event.key() == Qt.Key.Key_Escape:
             self.return_callback()
+
+        else:
+            super().keyPressEvent(event)

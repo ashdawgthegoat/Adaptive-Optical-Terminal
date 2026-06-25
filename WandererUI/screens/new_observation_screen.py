@@ -14,6 +14,10 @@ class NewObservationScreen(QWidget):
     def __init__(self, return_callback):
         super().__init__()
 
+        self.category = "Astronomy"
+
+        self.category_label = QLabel()
+
         self.return_callback = return_callback
 
         layout = QVBoxLayout()
@@ -37,15 +41,15 @@ class NewObservationScreen(QWidget):
             "color: white;"
         )
 
-        category = QLabel(
-            "Category: Astronomy"
+        self.category_label.setText(
+            f"Category: {self.category}"
         )
 
-        category.setAlignment(
+        self.category_label.setAlignment(
             Qt.AlignmentFlag.AlignCenter
         )
 
-        category.setStyleSheet(
+        self.category_label.setStyleSheet(
             "color: gray;"
         )
 
@@ -72,7 +76,7 @@ class NewObservationScreen(QWidget):
         layout.addWidget(title)
         layout.addSpacing(20)
 
-        layout.addWidget(category)
+        layout.addWidget(self.category_label)
         layout.addSpacing(20)
 
         layout.addWidget(self.name_input,alignment=Qt.AlignmentFlag.AlignCenter)
@@ -103,7 +107,7 @@ class NewObservationScreen(QWidget):
 
         success = (
             Eidolon.create_observation(
-                "Astronomy",
+                self.category,
                 name
             )
         )
@@ -137,3 +141,11 @@ class NewObservationScreen(QWidget):
 
         else:
             super().keyPressEvent(event)
+
+    def set_category(self,category):
+
+        self.category = category
+
+        self.category_label.setText(
+            f"Category: {category}"
+        )
