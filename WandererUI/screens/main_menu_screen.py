@@ -1,95 +1,103 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout
+)
+
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
+
+from widgets.main_layout import MainLayout
+
 
 class MainMenuScreen(QWidget):
+
     def __init__(self):
         super().__init__()
 
-        self.enter_callback = None  # Placeholder for enter key callback
+        self.enter_callback = None
 
-        self.menu_items = [
+        self.setFocusPolicy(
+            Qt.FocusPolicy.StrongFocus
+        )
+
+        self.ui = MainLayout()
+
+        layout = QVBoxLayout()
+
+        layout.addWidget(
+            self.ui
+        )
+
+        self.setLayout(
+            layout
+        )
+
+        self.initialize_screen()
+
+    def initialize_screen(self):
+
+        self.ui.header.set_title(
+            "WANDERER",
+            "MK II Alpha"
+        )
+
+        self.ui.navigation.set_items([
             "OBSERVE",
             "ARCHIVE",
             "MUSIC",
             "MODULES",
             "SYSTEM"
-        ]
-        self.current_selection = 0
-        self.item_labels = []
-        
-        # Enable keyboard focus for this widget
-        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        
-        self.init_ui()
-        self.update_menu()
+        ])
 
-    def init_ui(self):
-        layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.ui.context.set_title(
+            "SYSTEM STATUS"
+        )
 
-        # Title
-        title_label = QLabel("WANDERER")
-        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title_font = QFont("Monospace", 48, QFont.Weight.Bold)
-        title_font.setStyleHint(QFont.StyleHint.TypeWriter)
-        title_label.setFont(title_font)
-        title_label.setStyleSheet("color: white; letter-spacing: 10px;")
-        
-        layout.addWidget(title_label)
-        layout.addSpacing(60)
-        
-        menu_font = QFont("Monospace", 24)
-        menu_font.setStyleHint(QFont.StyleHint.TypeWriter)
+        self.ui.context.set_info({
 
-        for _ in self.menu_items:
-            item_label = QLabel()
-            item_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            item_label.setFont(menu_font)
-            item_label.setStyleSheet("color: white;")
-            self.item_labels.append(item_label)
-            layout.addWidget(item_label)
-            layout.addSpacing(20)
+            "Storage": "Unknown",
 
-        self.setLayout(layout)
+            "Battery": "Unknown",
 
-    def update_menu(self):
-        """Updates the text of the menu labels to reflect the current selection."""
-        # Find the max length to pad strings, keeping them perfectly aligned
-        max_len = max(len(item) for item in self.menu_items)
-        
-        for i, label in enumerate(self.item_labels):
-            # Pad the item to ensure uniform length for perfect center alignment
-            padded_item = self.menu_items[i].ljust(max_len)
-            
-            if i == self.current_selection:
-                label.setText(f"▶ {padded_item}")
-                label.setStyleSheet("color: white;")
-            else:
-                label.setText(f"  {padded_item}")
-                label.setStyleSheet("color: gray;")
+            "Modules": "0",
+
+            "Status": "Ready"
+
+        })
+
+        self.ui.footer.set_controls(
+            "↑↓ Navigate    ENTER Select"
+        )
+
+        self.ui.footer.set_status(
+            "Ready."
+        )
 
     def keyPressEvent(self, event):
-        """Handles keyboard navigation."""
+
         if event.key() == Qt.Key.Key_Up:
-            # Move up and wrap around
-            self.current_selection = (self.current_selection - 1) % len(self.menu_items)
-            self.update_menu()
+
+            self.ui.navigation.move_up()
+
         elif event.key() == Qt.Key.Key_Down:
-            # Move down and wrap around
-            self.current_selection = (self.current_selection + 1) % len(self.menu_items)
-            self.update_menu()
+
+            self.ui.navigation.move_down()
+
         elif event.key() in (
+
             Qt.Key.Key_Return,
+
             Qt.Key.Key_Enter
+
         ):
+
             if self.enter_callback:
+
                 self.enter_callback(
-                    self.menu_items[
-                        self.current_selection
-                    ]
+
+                    self.ui.navigation.current_item()
+
                 )
 
         else:
-            # Pass unhandled events to the base class
+
             super().keyPressEvent(event)
