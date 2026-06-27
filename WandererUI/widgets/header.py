@@ -11,7 +11,8 @@ from widgets.theme import (
     BODY_FONT,
     PRIMARY,
     ACCENT,
-    ITEM_SPACING
+    ITEM_SPACING,
+    SUBTITLE_FONT
 )
 
 
@@ -32,7 +33,7 @@ class Header(QWidget):
     def build_ui(self):
 
         self.title.setFont(TITLE_FONT)
-        self.subtitle.setFont(BODY_FONT)
+        self.subtitle.setFont(SUBTITLE_FONT)
 
         self.title.setStyleSheet(
             f"color: {PRIMARY};"
@@ -42,25 +43,43 @@ class Header(QWidget):
             f"color: {ACCENT};"
         )
 
-        left_layout = QVBoxLayout()
+        self.title.setAlignment(
+            Qt.AlignmentFlag.AlignLeft
+        )
 
-        left_layout.setSpacing(ITEM_SPACING // 2)
+        title_layout = QHBoxLayout()
 
-        left_layout.addWidget(
+        title_layout.setSpacing(
+            30
+        )  
+
+        title_layout.addWidget(
             self.title
         )
 
-        left_layout.addWidget(
+        title_layout.addWidget(
             self.subtitle
         )
 
+        title_layout.addStretch()
+
         main_layout = QHBoxLayout()
 
-        main_layout.addLayout(
-            left_layout
+        main_layout.setContentsMargins(
+            0,
+            0,
+            0,
+            0
         )
 
-        main_layout.addStretch()
+        main_layout.addLayout(
+            title_layout
+        )
+
+        main_layout.setAlignment(
+            title_layout,
+            Qt.AlignmentFlag.AlignVCenter
+        )
 
         self.setLayout(
             main_layout
@@ -70,7 +89,15 @@ class Header(QWidget):
 
         self.title.setText(title)
 
+        self.subtitle.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+
         if subtitle is not None:
             self.subtitle.setText(
                 subtitle
             )
+
+        self.subtitle.setStyleSheet(
+            f"""
+            color: {ACCENT};
+            """
+        )

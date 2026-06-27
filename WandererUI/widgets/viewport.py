@@ -10,16 +10,7 @@ from widgets.theme import (
     BODY_FONT
 )
 
-DEFAULT_ASCII = r"""
-             *
-        *         *
-             .
-      .              *
-
-          WANDERER
-
-     Awaiting Mission...
-"""
+from services.ascii_loader import (load_ascii)
 
 class Viewport(QWidget):
 
@@ -50,16 +41,14 @@ class Viewport(QWidget):
             f"color: {PRIMARY};"
         )
 
+        self.show_ascii(load_ascii("wanderer"))
+
         layout.addWidget(
             self.display
         )
 
         self.setLayout(
             layout
-        )
-
-        self.show_ascii(
-            DEFAULT_ASCII
         )
 
     def show_ascii(self,ascii_art):

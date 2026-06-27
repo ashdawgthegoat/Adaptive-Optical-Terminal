@@ -30,13 +30,18 @@ class NavigationPanel(QWidget):
 
         self.layout = QVBoxLayout()
 
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setContentsMargins(
+            10,
+            10,
+            10,
+            10
+        )
 
         self.layout.setAlignment(
             Qt.AlignmentFlag.AlignTop
         )
 
-        self.layout.setSpacing(ITEM_SPACING)
+        self.layout.setSpacing(ITEM_SPACING + 8)
 
         self.setLayout(
             self.layout
@@ -88,11 +93,12 @@ class NavigationPanel(QWidget):
             if i == self.current_selection:
 
                 label.setText(
-                    f"▶ {self.items[i]}"
+                    f"> {self.items[i]}"
                 )
 
                 label.setStyleSheet(
-                    f"color: {PRIMARY};"
+                    f"""color: {PRIMARY};
+                    font-weight: bold;"""
                 )
 
             else:

@@ -15,6 +15,7 @@ from widgets.theme import (
     INNER_MARGIN,
     SECTION_SPACING,
 )
+from widgets.separator import Separator
 
 class MainLayout(QWidget):
 
@@ -59,15 +60,7 @@ class MainLayout(QWidget):
 
         main_layout.addWidget(self.header)
 
-        separator = QFrame()
-
-        separator.setFrameShape(QFrame.Shape.HLine)
-
-        separator.setStyleSheet(
-            "color: #303030;"
-        )
-
-        main_layout.addWidget(separator)
+        main_layout.addWidget(Separator())
 
         body_layout.addWidget(self.navigation,2)
 
@@ -85,7 +78,7 @@ class MainLayout(QWidget):
             "color: #303030;"
         )
 
-        main_layout.addWidget(separator)
+        main_layout.addWidget(Separator())
 
         main_layout.addWidget(self.footer)
 

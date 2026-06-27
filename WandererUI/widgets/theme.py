@@ -15,6 +15,8 @@ WARNING = "#D2A84C"
 
 ERROR = "#C84A4A"
 
+SEPARATOR = "#303030"
+
 TITLE_FONT = QFont(
     "Monospace",
     28,
@@ -35,6 +37,11 @@ BODY_FONT = QFont(
 SMALL_FONT = QFont(
     "Monospace",
     10
+)
+
+SUBTITLE_FONT = QFont(
+    "JetBrains Mono",
+    12
 )
 
 OUTER_MARGIN = 30
