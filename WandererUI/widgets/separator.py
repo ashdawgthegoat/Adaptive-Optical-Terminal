@@ -7,24 +7,23 @@ from widgets.theme import (
 
 class Separator(QFrame):
 
-    def __init__(self):
+    def __init__(self, vertical=False):
         super().__init__()
 
-        self.setFrameShape(
-            QFrame.Shape.HLine
-        )
+        if vertical:
+            self.setFrameShape(QFrame.Shape.VLine)
+            self.setFixedWidth(1)
+        else:
+            self.setFrameShape(QFrame.Shape.HLine)
+            self.setFixedHeight(1)
 
-        self.setFrameShadow(
-            QFrame.Shadow.Plain
-        )
+        self.setFrameShadow(QFrame.Shadow.Plain)
 
         self.setStyleSheet(
             f"""
             QFrame {{
-                color: {SEPARATOR};
                 background-color: {SEPARATOR};
-                min-height: 1px;
-                max-height: 1px;
+                color: {SEPARATOR};
             }}
             """
         )

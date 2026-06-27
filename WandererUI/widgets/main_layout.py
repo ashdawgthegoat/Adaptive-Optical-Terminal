@@ -64,19 +64,15 @@ class MainLayout(QWidget):
 
         body_layout.addWidget(self.navigation,2)
 
+        body_layout.addWidget(Separator(vertical=True))
+
         body_layout.addWidget(self.viewport,6)
+
+        body_layout.addWidget(Separator(vertical=True))
 
         body_layout.addWidget(self.context,2)
 
-        main_layout.addLayout(body_layout)
-
-        separator = QFrame()
-
-        separator.setFrameShape(QFrame.Shape.HLine)
-
-        separator.setStyleSheet(
-            "color: #303030;"
-        )
+        main_layout.addLayout(body_layout, stretch=1)
 
         main_layout.addWidget(Separator())
 

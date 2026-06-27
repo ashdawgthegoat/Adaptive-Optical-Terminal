@@ -18,6 +18,8 @@ class NavigationPanel(QWidget):
     def __init__(self, items=None):
         super().__init__()
 
+        self.title = QLabel("MAIN MENU")
+
         self.items = items or []
 
         self.current_selection = 0
@@ -41,11 +43,17 @@ class NavigationPanel(QWidget):
             Qt.AlignmentFlag.AlignTop
         )
 
-        self.layout.setSpacing(ITEM_SPACING + 8)
+        self.layout.setSpacing(0)
 
         self.setLayout(
             self.layout
         )
+
+        self.title.setFont(SECTION_FONT)
+        self.title.setStyleSheet(f"color: {PRIMARY};")
+        self.title.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        self.layout.addWidget(self.title)
 
         self.set_items(
             self.items
@@ -75,7 +83,8 @@ class NavigationPanel(QWidget):
             )
 
             self.layout.addWidget(
-                label
+                label,
+                1
             )
 
             self.labels.append(

@@ -17,6 +17,8 @@ ERROR = "#C84A4A"
 
 SEPARATOR = "#303030"
 
+SURFACE = "#111111"
+
 TITLE_FONT = QFont(
     "Monospace",
     28,

@@ -5,25 +5,23 @@ from PyQt6.QtWidgets import (
 )
 
 from PyQt6.QtCore import Qt
+
 from widgets.theme import (
     PRIMARY,
-    ITEM_SPACING,
+    SECONDARY,
     SECTION_FONT,
-    SMALL_FONT,
-    SECONDARY
+    SMALL_FONT
 )
+
 
 class ContextPanel(QWidget):
 
-    def __init__(
-        self,
-        title="SYSTEM STATUS"
-    ):
+    def __init__(self, title="SYSTEM STATUS"):
         super().__init__()
 
         self.title = QLabel(title)
 
-        self.info_labels = []
+        self.info = {}
 
         self.build_ui()
 
@@ -31,63 +29,82 @@ class ContextPanel(QWidget):
 
         self.layout = QVBoxLayout()
 
-        self.layout.setContentsMargins(0, 0, 0, 0)
-
-        self.layout.setAlignment(
-            Qt.AlignmentFlag.AlignTop
+        self.layout.setContentsMargins(
+            10,
+            10,
+            10,
+            10
         )
 
-        self.layout.setSpacing(ITEM_SPACING)
+        self.layout.setSpacing(0)
 
-        self.title.setFont(
-            SECTION_FONT
-        )
+        self.setLayout(self.layout)
+
+        self.title.setFont(SECTION_FONT)
 
         self.title.setStyleSheet(
             f"color: {PRIMARY};"
         )
 
-        self.layout.addWidget(
-            self.title
+        self.title.setAlignment(
+            Qt.AlignmentFlag.AlignLeft
         )
 
-        self.layout.addSpacing(ITEM_SPACING)
+        self.layout.addWidget(self.title)
 
-        self.setLayout(
-            self.layout
-        )
+    def set_info(self, info):
 
-    def set_info(self,info):
+        self.info = info
 
-        for label in self.info_labels:
-            label.deleteLater()
+        while self.layout.count() > 1:
 
-        self.info_labels.clear()
+            item = self.layout.takeAt(1)
+
+            if item.widget():
+                item.widget().deleteLater()
 
         for key, value in info.items():
 
-            label = QLabel(
-                f"{key}\n{value}"
+            cell = QWidget()
+
+            cell_layout = QVBoxLayout()
+
+            cell_layout.setContentsMargins(
+                0,
+                0,
+                0,
+                0
             )
 
-            label.setFont(
-                SMALL_FONT
+            cell_layout.setSpacing(2)
+
+            key_label = QLabel(key)
+
+            key_label.setFont(SMALL_FONT)
+
+            key_label.setStyleSheet(
+                f"color: {PRIMARY};"
             )
 
-            label.setStyleSheet(
+            value_label = QLabel(str(value))
+
+            value_label.setFont(SMALL_FONT)
+
+            value_label.setStyleSheet(
                 f"color: {SECONDARY};"
             )
 
+            cell_layout.addWidget(key_label)
+
+            cell_layout.addWidget(value_label)
+
+            cell.setLayout(cell_layout)
+
             self.layout.addWidget(
-                label
+                cell,
+                1
             )
 
-            self.info_labels.append(
-                label
-            )
+    def set_title(self, title):
 
-    def set_title(self,title):
-
-        self.title.setText(
-            title
-        )
+        self.title.setText(title)
