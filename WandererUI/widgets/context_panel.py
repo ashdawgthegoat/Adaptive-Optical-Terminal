@@ -1,7 +1,8 @@
 from PyQt6.QtWidgets import (
     QWidget,
     QLabel,
-    QVBoxLayout
+    QVBoxLayout,
+    QFrame
 )
 
 from PyQt6.QtCore import Qt
@@ -10,101 +11,206 @@ from widgets.theme import (
     PRIMARY,
     SECONDARY,
     SECTION_FONT,
-    SMALL_FONT
+    SMALL_FONT,
+    ACCENT
 )
+
+from widgets.info_cell import InfoCell
 
 
 class ContextPanel(QWidget):
 
-    def __init__(self, title="SYSTEM STATUS"):
+    def __init__(self):
+
         super().__init__()
-
-        self.title = QLabel(title)
-
-        self.info = {}
 
         self.build_ui()
 
     def build_ui(self):
 
-        self.layout = QVBoxLayout()
+        self.main_layout = QVBoxLayout()
 
-        self.layout.setContentsMargins(
+        self.main_layout.setContentsMargins(
             10,
             10,
             10,
             10
         )
 
-        self.layout.setSpacing(0)
+        self.main_layout.setSpacing(8)
 
-        self.setLayout(self.layout)
+        self.setLayout(
+            self.main_layout
+        )
 
-        self.title.setFont(SECTION_FONT)
+        # ============================
+        # SYSTEM SECTION
+        # ============================
 
-        self.title.setStyleSheet(
+        self.system_title = QLabel(
+            "SYSTEM STATUS"
+        )
+
+        self.system_title.setFont(
+            SECTION_FONT
+        )
+
+        self.system_title.setStyleSheet(
             f"color: {PRIMARY};"
         )
 
-        self.title.setAlignment(
+        self.system_title.setAlignment(
             Qt.AlignmentFlag.AlignLeft
         )
 
-        self.layout.addWidget(self.title)
+        self.main_layout.addWidget(
+            self.system_title
+        )
 
-    def set_info(self, info):
+        self.system_layout = QVBoxLayout()
 
-        self.info = info
+        self.system_layout.setSpacing(4)
 
-        while self.layout.count() > 1:
+        self.main_layout.addLayout(
+            self.system_layout,
+            3
+        )
 
-            item = self.layout.takeAt(1)
+        # ============================
+        # DIVIDER
+        # ============================
+
+        divider = QFrame()
+
+        divider.setFrameShape(
+            QFrame.Shape.HLine
+        )
+
+        divider.setStyleSheet(
+            f"""
+            color: {ACCENT};
+            background-color: {ACCENT};
+            """
+        )
+
+        divider.setFixedHeight(1)
+
+        self.main_layout.addWidget(
+            divider
+        )
+
+        # ============================
+        # MODULE PORT
+        # ============================
+
+        self.module_title = QLabel(
+            "MODULE PORT"
+        )
+
+        self.module_title.setFont(
+            SECTION_FONT
+        )
+
+        self.module_title.setStyleSheet(
+            f"color: {PRIMARY};"
+        )
+
+        self.main_layout.addWidget(
+            self.module_title
+        )
+
+        self.module_layout = QVBoxLayout()
+
+        self.module_layout.setSpacing(4)
+
+        self.main_layout.addLayout(
+            self.module_layout,
+            1
+        )
+
+        self.set_module_info({
+            "Status": "No Active Module"
+        })
+
+    # =====================================
+
+    def _clear_layout(
+        self,
+        layout
+    ):
+
+        while layout.count():
+
+            item = layout.takeAt(0)
 
             if item.widget():
+
                 item.widget().deleteLater()
+
+    # =====================================
+
+    def set_info(self,info):
+
+        self._clear_layout(
+            self.system_layout
+        )
 
         for key, value in info.items():
 
-            cell = QWidget()
+            self.system_layout.addWidget(
 
-            cell_layout = QVBoxLayout()
+                InfoCell(
 
-            cell_layout.setContentsMargins(
-                0,
-                0,
-                0,
-                0
+                    title=key,
+
+                    value=value
+
+                )
+
             )
 
-            cell_layout.setSpacing(2)
+            self.system_layout.addStretch()
 
-            key_label = QLabel(key)
+    # =====================================
 
-            key_label.setFont(SMALL_FONT)
+    def set_module_info(self,info):
 
-            key_label.setStyleSheet(
-                f"color: {PRIMARY};"
+        self._clear_layout(
+            self.module_layout
+        )
+
+        for key, value in info.items():
+
+            self.module_layout.addWidget(
+
+                InfoCell(
+
+                    title=key,
+
+                    value=value
+
+                )
+
             )
 
-            value_label = QLabel(str(value))
+            self.module_layout.addStretch()
 
-            value_label.setFont(SMALL_FONT)
+    # =====================================
 
-            value_label.setStyleSheet(
-                f"color: {SECONDARY};"
-            )
+    def set_title(
+        self,
+        title
+    ):
 
-            cell_layout.addWidget(key_label)
+        self.system_title.setText(
+            title
+        )
+    
+    def clear_module(self):
 
-            cell_layout.addWidget(value_label)
+        self.set_module_info({
 
-            cell.setLayout(cell_layout)
+            "Status":
+                "No Active Module"
 
-            self.layout.addWidget(
-                cell,
-                1
-            )
-
-    def set_title(self, title):
-
-        self.title.setText(title)
+        })

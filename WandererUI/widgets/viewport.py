@@ -11,8 +11,7 @@ from widgets.theme import (
     SECTION_FONT
 )
 
-from services.ascii_loader import (load_ascii)
-from services.ascii_engine import (AsciiEngine)
+from services.maaya import Maaya
 
 class Viewport(QWidget):
 
@@ -23,9 +22,9 @@ class Viewport(QWidget):
 
         self.display = QLabel()
 
-        self.engine = AsciiEngine()
+        self.maaya = Maaya()
 
-        self.engine.frame_changed.connect(
+        self.maaya.frame_changed.connect(
             self.show_ascii
         )
 
@@ -57,7 +56,7 @@ class Viewport(QWidget):
             f"color: {PRIMARY};"
         )
 
-        self.show_ascii(load_ascii("wanderer"))
+        self.show_ascii(self.maaya.get_logo("wanderer"))
 
         layout.addWidget(
             self.display,
@@ -74,13 +73,13 @@ class Viewport(QWidget):
             ascii_art
         )
     
-    def play_animation(self, folder, fps=10):
+    def play_animation(self, name, fps=10):
 
-        self.engine.set_fps(fps)
+        self.maaya.set_fps(fps)
 
-        self.engine.load_animation(folder)
+        self.maaya.set_animation(name)
 
-        self.engine.play()
+        self.maaya.play()
 
     def clear(self):
 

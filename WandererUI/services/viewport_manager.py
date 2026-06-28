@@ -1,6 +1,3 @@
-from services.ascii_loader import load_ascii
-
-
 class ViewportManager:
 
     def __init__(self, viewport):
@@ -9,26 +6,24 @@ class ViewportManager:
 
     def show_static(self, name):
 
-        ascii_art = load_ascii(name)
-
         self.viewport.show_ascii(
-            ascii_art
+            name
         )
 
     def show_animation(
         self,
-        folder,
+        name,
         fps=10
     ):
 
         self.viewport.play_animation(
-            folder,
+            name,
             fps
         )
 
     def stop_animation(self):
 
-        self.viewport.engine.stop()
+        self.viewport.maaya.stop()
 
     def clear(self):
 

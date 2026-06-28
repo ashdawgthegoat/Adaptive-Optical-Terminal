@@ -8,13 +8,13 @@ from PyQt6.QtCore import Qt
 from widgets.main_layout import MainLayout
 
 from services.viewport_manager import ViewportManager
-
 from services.context_manager import ContextManager
 
 
 class MainMenuScreen(QWidget):
 
     def __init__(self):
+
         super().__init__()
 
         self.enter_callback = None
@@ -53,7 +53,7 @@ class MainMenuScreen(QWidget):
         )
 
         self.viewport_manager.show_animation(
-            "assets/ascii/animations/stars",
+            "stars",
             fps=5
         )
 
@@ -62,12 +62,8 @@ class MainMenuScreen(QWidget):
             "ARCHIVE",
             "MUSIC",
             "MODULES",
-            "SYSTEM"
+            "SETTINGS"
         ])
-
-        self.ui.context.set_title(
-            "SYSTEM STATUS"
-        )
 
         self.context_manager.start()
 
@@ -92,7 +88,6 @@ class MainMenuScreen(QWidget):
         elif event.key() in (
 
             Qt.Key.Key_Return,
-
             Qt.Key.Key_Enter
 
         ):
@@ -100,9 +95,7 @@ class MainMenuScreen(QWidget):
             if self.enter_callback:
 
                 self.enter_callback(
-
                     self.ui.navigation.current_item()
-
                 )
 
         else:
