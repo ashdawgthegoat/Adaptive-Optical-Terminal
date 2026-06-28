@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (
-    QWidget,
+    QFrame,
     QLabel,
     QHBoxLayout
 )
@@ -9,10 +9,12 @@ from widgets.theme import (
     SMALL_FONT,
     PRIMARY,
     SECONDARY,
+    ACCENT
 )
 
+from widgets.panel import Panel
 
-class Footer(QWidget):
+class Footer(Panel):
 
     def __init__(
         self,
@@ -54,6 +56,8 @@ class Footer(QWidget):
         )
 
         self.setLayout(layout)
+
+        self.set_inactive()
 
     def set_controls(
         self,

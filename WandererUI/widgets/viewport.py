@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (
-    QWidget,
+    QFrame,
     QLabel,
     QVBoxLayout
 )
@@ -8,12 +8,14 @@ from PyQt6.QtCore import Qt
 from widgets.theme import (
     PRIMARY,
     BODY_FONT,
-    SECTION_FONT
+    SECTION_FONT,
+    ACCENT
 )
 
 from services.maaya import Maaya
+from widgets.panel import Panel
 
-class Viewport(QWidget):
+class Viewport(Panel):
 
     def __init__(self):
         super().__init__()
@@ -66,6 +68,8 @@ class Viewport(QWidget):
         layout.addStretch()
 
         self.setLayout(layout)
+
+        self.set_inactive()
 
     def show_ascii(self,ascii_art):
 

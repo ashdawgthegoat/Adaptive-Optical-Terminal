@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (
-    QWidget,
+    QFrame,
     QLabel,
     QHBoxLayout,
     QVBoxLayout
@@ -15,8 +15,9 @@ from widgets.theme import (
     SUBTITLE_FONT
 )
 
+from widgets.panel import Panel
 
-class Header(QWidget):
+class Header(Panel):
 
     def __init__(
         self,
@@ -84,6 +85,8 @@ class Header(QWidget):
         self.setLayout(
             main_layout
         )
+
+        self.set_inactive()
 
     def set_title(self,title,subtitle=None):
 

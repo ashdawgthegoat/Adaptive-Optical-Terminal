@@ -1,8 +1,7 @@
 from PyQt6.QtWidgets import (
-    QWidget,
+    QFrame,
     QLabel,
-    QVBoxLayout,
-    QFrame
+    QVBoxLayout
 )
 
 from PyQt6.QtCore import Qt
@@ -16,9 +15,10 @@ from widgets.theme import (
 )
 
 from widgets.info_cell import InfoCell
+from widgets.panel import Panel
 
 
-class ContextPanel(QWidget):
+class ContextPanel(Panel):
 
     def __init__(self):
 
@@ -131,6 +131,8 @@ class ContextPanel(QWidget):
         self.set_module_info({
             "Status": "No Active Module"
         })
+
+        self.set_inactive()
 
     # =====================================
 

@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (
-    QWidget,
+    QFrame,
     QLabel,
     QVBoxLayout
 )
@@ -8,13 +8,14 @@ from PyQt6.QtCore import Qt
 
 from widgets.theme import (
     SECTION_FONT,
-    PRIMARY
+    PRIMARY,
+    ACCENT
 )
 
 from widgets.navigation_item import NavigationItem
+from widgets.panel import Panel
 
-
-class NavigationPanel(QWidget):
+class NavigationPanel(Panel):
 
     def __init__(self, items=None):
         super().__init__()
@@ -65,6 +66,8 @@ class NavigationPanel(QWidget):
         self.set_items(self.items)
 
         self.layout.addStretch()
+
+        self.set_inactive()
 
     def set_items(self, items):
 
