@@ -7,6 +7,10 @@ from PyQt6.QtCore import Qt
 
 from widgets.main_layout import MainLayout
 
+from services.viewport_manager import ViewportManager
+
+from services.context_manager import ContextManager
+
 
 class MainMenuScreen(QWidget):
 
@@ -20,6 +24,14 @@ class MainMenuScreen(QWidget):
         )
 
         self.ui = MainLayout()
+
+        self.viewport_manager = ViewportManager(
+            self.ui.viewport
+        )
+
+        self.context_manager = ContextManager(
+            self.ui.context
+        )
 
         layout = QVBoxLayout()
 
@@ -40,6 +52,11 @@ class MainMenuScreen(QWidget):
             "MK II Alpha"
         )
 
+        self.viewport_manager.show_animation(
+            "assets/ascii/animations/stars",
+            fps=5
+        )
+
         self.ui.navigation.set_items([
             "OBSERVE",
             "ARCHIVE",
@@ -52,17 +69,7 @@ class MainMenuScreen(QWidget):
             "SYSTEM STATUS"
         )
 
-        self.ui.context.set_info({
-
-            "Storage": "Unknown",
-
-            "Battery": "Unknown",
-
-            "Modules": "0",
-
-            "Status": "Ready"
-
-        })
+        self.context_manager.start()
 
         self.ui.footer.set_controls(
             "↑↓ Navigate    ENTER Select"

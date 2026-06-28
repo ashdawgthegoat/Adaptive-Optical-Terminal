@@ -12,6 +12,7 @@ from widgets.theme import (
 )
 
 from services.ascii_loader import (load_ascii)
+from services.ascii_engine import (AsciiEngine)
 
 class Viewport(QWidget):
 
@@ -21,6 +22,12 @@ class Viewport(QWidget):
         self.title = QLabel("VIEWPORT")
 
         self.display = QLabel()
+
+        self.engine = AsciiEngine()
+
+        self.engine.frame_changed.connect(
+            self.show_ascii
+        )
 
         self.build_ui()
 
@@ -66,6 +73,14 @@ class Viewport(QWidget):
         self.display.setText(
             ascii_art
         )
+    
+    def play_animation(self, folder, fps=10):
+
+        self.engine.set_fps(fps)
+
+        self.engine.load_animation(folder)
+
+        self.engine.play()
 
     def clear(self):
 

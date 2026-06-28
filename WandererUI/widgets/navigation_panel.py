@@ -5,12 +5,13 @@ from PyQt6.QtWidgets import (
 )
 
 from PyQt6.QtCore import Qt
+
 from widgets.theme import (
     SECTION_FONT,
-    PRIMARY,
-    SECONDARY,
-    ITEM_SPACING
+    PRIMARY
 )
+
+from widgets.navigation_item import NavigationItem
 
 
 class NavigationPanel(QWidget):
@@ -24,7 +25,7 @@ class NavigationPanel(QWidget):
 
         self.current_selection = 0
 
-        self.labels = []
+        self.nav_items = []
 
         self.build_ui()
 
@@ -39,87 +40,63 @@ class NavigationPanel(QWidget):
             10
         )
 
+        self.layout.setSpacing(12)
+
         self.layout.setAlignment(
             Qt.AlignmentFlag.AlignTop
         )
 
-        self.layout.setSpacing(0)
-
-        self.setLayout(
-            self.layout
-        )
+        self.setLayout(self.layout)
 
         self.title.setFont(SECTION_FONT)
-        self.title.setStyleSheet(f"color: {PRIMARY};")
-        self.title.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        self.title.setStyleSheet(
+            f"color: {PRIMARY};"
+        )
+
+        self.title.setAlignment(
+            Qt.AlignmentFlag.AlignLeft
+        )
 
         self.layout.addWidget(self.title)
 
-        self.set_items(
-            self.items
-        )
+        self.layout.addSpacing(8)
 
-    def set_items(self,items):
+        self.set_items(self.items)
+
+        self.layout.addStretch()
+
+    def set_items(self, items):
 
         self.items = items
 
         self.current_selection = 0
 
-        for label in self.labels:
-            label.deleteLater()
+        for item in self.nav_items:
+            item.deleteLater()
 
-        self.labels.clear()
+        self.nav_items.clear()
 
-        for item in self.items:
+        for text in self.items:
 
-            label = QLabel()
+            item = NavigationItem(text)
 
-            label.setFont(
-                SECTION_FONT
-            )
+            self.layout.addWidget(item)
 
-            label.setAlignment(
-                Qt.AlignmentFlag.AlignLeft
-            )
+            self.nav_items.append(item)
 
-            self.layout.addWidget(
-                label,
-                1
-            )
-
-            self.labels.append(
-                label
-            )
+            self.layout.addStretch()
 
         self.update_selection()
 
     def update_selection(self):
 
-        for i, label in enumerate(
-            self.labels
-        ):
+        for i, item in enumerate(self.nav_items):
 
-            if i == self.current_selection:
+            item.set_selected(
+                i == self.current_selection
+            )
 
-                label.setText(
-                    f"> {self.items[i]}"
-                )
-
-                label.setStyleSheet(
-                    f"""color: {PRIMARY};
-                    font-weight: bold;"""
-                )
-
-            else:
-
-                label.setText(
-                    f"  {self.items[i]}"
-                )
-
-                label.setStyleSheet(
-                    f"color: {SECONDARY};"
-                )
-    
     def move_up(self):
 
         if not self.items:
