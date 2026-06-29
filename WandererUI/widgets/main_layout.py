@@ -15,7 +15,6 @@ from widgets.theme import (
     INNER_MARGIN,
     SECTION_SPACING,
 )
-from widgets.separator import Separator
 
 class MainLayout(QWidget):
 
@@ -51,6 +50,8 @@ class MainLayout(QWidget):
 
         body_layout = QHBoxLayout()
 
+        body_layout.setSpacing(4)
+
         body_layout.setContentsMargins(
             INNER_MARGIN,
             0,
@@ -58,27 +59,39 @@ class MainLayout(QWidget):
             0
         )
 
-        main_layout.addWidget(self.header)
+        header_layout=QHBoxLayout()
 
-        main_layout.addWidget(Separator())
+        header_layout.setContentsMargins(
+            INNER_MARGIN,
+            0,
+            INNER_MARGIN,
+            0
+        )
+
+        header_layout.addWidget(self.header)
+
+        main_layout.addLayout(header_layout)
 
         body_layout.addWidget(self.navigation,2)
 
-        body_layout.addWidget(Separator(vertical=True))
-
         body_layout.addWidget(self.viewport,6)
-
-        body_layout.addWidget(Separator(vertical=True))
 
         body_layout.addWidget(self.context,2)
 
         main_layout.addLayout(body_layout, stretch=1)
 
-        main_layout.addWidget(Separator())
+        footer_layout = QHBoxLayout()
 
-        main_layout.addWidget(self.footer)
+        footer_layout.setContentsMargins(
+            INNER_MARGIN,
+            0,
+            INNER_MARGIN,
+            0
+        )
 
-        main_layout.addSpacing(INNER_MARGIN)
+        footer_layout.addWidget(self.footer)
+
+        main_layout.addLayout(footer_layout)
 
         self.setLayout(main_layout)
 

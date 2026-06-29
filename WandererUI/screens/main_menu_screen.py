@@ -71,21 +71,44 @@ class MainMenuScreen(QWidget):
         self.context_manager.start()
 
         self.ui.footer.set_controls(
-            "↑↓ Navigate    ENTER Select"
+            "←↑↓→ Navigate    CTRL Capture    ENTER Select"
         )
 
         self.ui.footer.set_status(
             "Ready."
         )
 
-        self.kaizen.register("header")
-        self.kaizen.register("navigation")
-        self.kaizen.register("viewport")
-        self.kaizen.register("context")
-        self.kaizen.register("footer")
+        self.kaizen.focus_changed.connect(
+            lambda _: self.update_focus()
+        )
+
+        self.ui.header.clicked.connect(
+            lambda: self.change_focus("header")
+        )
+
+        self.ui.navigation.clicked.connect(
+            lambda: self.change_focus("navigation")
+        )
+
+        self.ui.viewport.clicked.connect(
+            lambda: self.change_focus("viewport")
+        )
+
+        self.ui.context.clicked.connect(
+            lambda: self.change_focus("context")
+        )
+
+        self.ui.footer.clicked.connect(
+            lambda: self.change_focus("footer")
+        )
 
         self.kaizen.initialize()
-        self.update_focus()
+
+    def change_focus(self, region):
+
+        self.kaizen.set_focus(region)
+
+        self.setFocus()
 
     def update_focus(self):
 
@@ -114,45 +137,83 @@ class MainMenuScreen(QWidget):
 
     def keyPressEvent(self, event):
 
-        if event.key() == Qt.Key.Key_Tab:
+    # ==========================
+    # Toggle panel capture
+    # ==========================
 
-            self.kaizen.next()
-            self.update_focus()
+        if event.key() == Qt.Key.Key_Control:
 
-            print(
-                self.kaizen.current()
-            )
+            locked = self.kaizen.toggle_lock()
+
+            if locked:
+
+                self.ui.footer.set_status(
+                    f"{self.kaizen.current().upper()} Captured"
+                )
+
+            else:
+
+                self.ui.footer.set_status(
+                    "Panel Navigation"
+                )
 
             return
 
-        if (
-            self.kaizen.has_focus("navigation")
-            and event.key() == Qt.Key.Key_Up
-        ):
+    # ==========================
+    # Panel Navigation
+    # ==========================
 
-            self.ui.navigation.move_up()
+        if not self.kaizen.is_locked():
 
-        elif (
-            self.kaizen.has_focus("navigation")
-            and event.key() == Qt.Key.Key_Down
-        ):
+            match event.key():
 
-            self.ui.navigation.move_down()
+                case Qt.Key.Key_Left:
 
-        elif (
-            self.kaizen.has_focus("navigation")
-            and event.key() in (
+                    self.kaizen.move_left()
+                    return
+
+                case Qt.Key.Key_Right:
+
+                    self.kaizen.move_right()
+                    return
+
+                case Qt.Key.Key_Up:
+
+                    self.kaizen.move_up()
+                    return
+
+                case Qt.Key.Key_Down:
+
+                    self.kaizen.move_down()
+                    return
+
+    # ==========================
+    # Navigation Panel
+    # ==========================
+
+        if self.kaizen.has_focus("navigation"):
+
+            if event.key() == Qt.Key.Key_Up:
+
+                self.ui.navigation.move_up()
+                return
+
+            elif event.key() == Qt.Key.Key_Down:
+
+                self.ui.navigation.move_down()
+                return
+
+            elif event.key() in (
                 Qt.Key.Key_Return,
                 Qt.Key.Key_Enter
-            )
-        ):
+            ):
 
-            if self.enter_callback:
+                if self.enter_callback:
 
-                self.enter_callback(
-                    self.ui.navigation.current_item()
-                )
+                    self.enter_callback(
+                        self.ui.navigation.current_item()
+                    )
 
-        else:
+                return
 
-            super().keyPressEvent(event)
+        super().keyPressEvent(event)

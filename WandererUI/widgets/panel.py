@@ -1,4 +1,8 @@
 from PyQt6.QtWidgets import QFrame
+from PyQt6.QtCore import (
+    pyqtSignal,
+    Qt
+)
 
 from widgets.theme import (
     ACCENT
@@ -6,6 +10,8 @@ from widgets.theme import (
 
 
 class Panel(QFrame):
+
+    clicked =pyqtSignal()
 
     def __init__(self):
 
@@ -62,3 +68,11 @@ class Panel(QFrame):
                 }
                 """
             )
+
+    def mousePressEvent(self, event):
+
+        if event.button() == Qt.MouseButton.LeftButton:
+
+            self.clicked.emit()
+
+        super().mousePressEvent(event)

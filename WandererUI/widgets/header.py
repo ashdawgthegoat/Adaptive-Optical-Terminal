@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout
 )
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from widgets.theme import (
     TITLE_FONT,
     BODY_FONT,
@@ -18,6 +18,16 @@ from widgets.theme import (
 from widgets.panel import Panel
 
 class Header(Panel):
+
+    left_requested = pyqtSignal()
+
+    right_requested = pyqtSignal()
+
+    up_requested = pyqtSignal()
+
+    down_requested = pyqtSignal()
+
+    activated = pyqtSignal()
 
     def __init__(
         self,
@@ -104,3 +114,33 @@ class Header(Panel):
             color: {ACCENT};
             """
         )
+
+    def keyPressEvent(self, event):
+
+        match event.key():
+
+            case Qt.Key.Key_Left:
+                self.left_requested.emit()
+
+            case Qt.Key.Key_Right:
+                self.right_requested.emit()
+
+            case Qt.Key.Key_Up:
+                self.up_requested.emit()
+
+            case Qt.Key.Key_Down:
+                self.down_requested.emit()
+
+            case Qt.Key.Key_Return | Qt.Key.Key_Enter:
+                self.activated.emit()
+
+            case _:
+                super().keyPressEvent(event)
+
+    def mousePressEvent(self, event):
+
+        if event.button() == Qt.MouseButton.LeftButton:
+
+            self.activated.emit()
+
+        super().mousePressEvent(event)

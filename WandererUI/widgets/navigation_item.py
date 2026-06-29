@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout
 )
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import (Qt, pyqtSignal)
 
 from widgets.theme import (
     SECTION_FONT,
@@ -16,6 +16,8 @@ from widgets.theme import (
 
 
 class NavigationItem(QFrame):
+
+    clicked = pyqtSignal()
 
     def __init__(self, text):
         super().__init__()
@@ -44,6 +46,9 @@ class NavigationItem(QFrame):
 
         # Menu text
         self.label = QLabel(self.text)
+        self.label.setAttribute(
+            Qt.WidgetAttribute.WA_TransparentForMouseEvents
+        )
         self.label.setFont(SECTION_FONT)
         self.label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter |
@@ -97,3 +102,11 @@ class NavigationItem(QFrame):
                 }}
                 """
             )
+
+    def mousePressEvent(self, event):
+
+        if event.button() == Qt.MouseButton.LeftButton:
+
+            self.clicked.emit()
+
+        super().mousePressEvent(event)

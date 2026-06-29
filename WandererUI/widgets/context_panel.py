@@ -1,16 +1,16 @@
 from PyQt6.QtWidgets import (
     QFrame,
     QLabel,
-    QVBoxLayout
+    QWidget,
+    QVBoxLayout,
+    QScrollArea
 )
 
 from PyQt6.QtCore import Qt
 
 from widgets.theme import (
     PRIMARY,
-    SECONDARY,
     SECTION_FONT,
-    SMALL_FONT,
     ACCENT
 )
 
@@ -26,7 +26,15 @@ class ContextPanel(Panel):
 
         self.build_ui()
 
+    # =====================================
+
     def build_ui(self):
+
+        root_layout = QVBoxLayout()
+
+        self.scroll = QScrollArea()
+
+        self.content = QWidget()
 
         self.main_layout = QVBoxLayout()
 
@@ -38,10 +46,6 @@ class ContextPanel(Panel):
         )
 
         self.main_layout.setSpacing(8)
-
-        self.setLayout(
-            self.main_layout
-        )
 
         # ============================
         # SYSTEM SECTION
@@ -86,14 +90,13 @@ class ContextPanel(Panel):
             QFrame.Shape.HLine
         )
 
+        divider.setFixedHeight(1)
+
         divider.setStyleSheet(
             f"""
-            color: {ACCENT};
             background-color: {ACCENT};
             """
         )
-
-        divider.setFixedHeight(1)
 
         self.main_layout.addWidget(
             divider
@@ -128,6 +131,38 @@ class ContextPanel(Panel):
             1
         )
 
+        self.content.setLayout(
+            self.main_layout
+        )
+
+        self.scroll.setWidget(
+            self.content
+        )
+
+        self.scroll.setWidgetResizable(
+            True
+        )
+
+        self.scroll.setFrameShape(
+            QScrollArea.Shape.NoFrame
+        )
+
+        self.scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+
+        self.scroll.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+
+        root_layout.addWidget(
+            self.scroll
+        )
+
+        self.setLayout(
+            root_layout
+        )
+
         self.set_module_info({
             "Status": "No Active Module"
         })
@@ -136,10 +171,7 @@ class ContextPanel(Panel):
 
     # =====================================
 
-    def _clear_layout(
-        self,
-        layout
-    ):
+    def _clear_layout(self, layout):
 
         while layout.count():
 
@@ -151,7 +183,7 @@ class ContextPanel(Panel):
 
     # =====================================
 
-    def set_info(self,info):
+    def set_info(self, info):
 
         self._clear_layout(
             self.system_layout
@@ -159,23 +191,20 @@ class ContextPanel(Panel):
 
         for key, value in info.items():
 
-            self.system_layout.addWidget(
-
-                InfoCell(
-
-                    title=key,
-
-                    value=value
-
-                )
-
+            cell = InfoCell(
+                title=key,
+                value=value
             )
 
-            self.system_layout.addStretch()
+            self.system_layout.addWidget(
+                cell
+            )
+
+        self.system_layout.addStretch()
 
     # =====================================
 
-    def set_module_info(self,info):
+    def set_module_info(self, info):
 
         self._clear_layout(
             self.module_layout
@@ -183,36 +212,31 @@ class ContextPanel(Panel):
 
         for key, value in info.items():
 
-            self.module_layout.addWidget(
-
-                InfoCell(
-
-                    title=key,
-
-                    value=value
-
-                )
-
+            cell = InfoCell(
+                title=key,
+                value=value
             )
 
-            self.module_layout.addStretch()
+            self.module_layout.addWidget(
+                cell
+            )
+
+        self.module_layout.addStretch()
 
     # =====================================
 
-    def set_title(
-        self,
-        title
-    ):
+    def set_title(self, title):
 
         self.system_title.setText(
             title
         )
-    
+
+    # =====================================
+
     def clear_module(self):
 
         self.set_module_info({
 
-            "Status":
-                "No Active Module"
+            "Status": "No Active Module"
 
         })

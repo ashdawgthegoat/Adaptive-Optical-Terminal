@@ -1,21 +1,27 @@
 from PyQt6.QtWidgets import (
-    QFrame,
     QLabel,
-    QVBoxLayout
+    QWidget,
+    QVBoxLayout,
+    QScrollArea
 )
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from widgets.theme import (
     PRIMARY,
     BODY_FONT,
-    SECTION_FONT,
-    ACCENT
+    SECTION_FONT
 )
 
 from services.maaya import Maaya
 from widgets.panel import Panel
 
 class Viewport(Panel):
+
+    next_requested = pyqtSignal()
+    previous_requested = pyqtSignal()
+
+    next_group_requested = pyqtSignal()
+    previous_group_requested = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -36,17 +42,23 @@ class Viewport(Panel):
 
         layout = QVBoxLayout()
 
-        layout.setContentsMargins(10, 10, 10, 10)
+        self.scroll = QScrollArea()
 
-        layout.setSpacing(0)
+        self.content = QWidget()
+
+        self.content_layout = QVBoxLayout()
+
+        self.content_layout.setContentsMargins(10, 10, 10, 10)
+
+        self.content_layout.setSpacing(0)
 
         self.title.setFont(SECTION_FONT)
         self.title.setStyleSheet(f"color: {PRIMARY};")
         self.title.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-        layout.addWidget(self.title)
+        self.content_layout.addWidget(self.title)
 
-        layout.addStretch()
+        self.content_layout.addStretch()
 
         self.display.setFont(BODY_FONT)
 
@@ -60,12 +72,38 @@ class Viewport(Panel):
 
         self.show_ascii(self.maaya.get_logo("wanderer"))
 
-        layout.addWidget(
+        self.content_layout.addWidget(
             self.display,
             alignment=Qt.AlignmentFlag.AlignCenter
         )
 
-        layout.addStretch()
+        self.content_layout.addStretch()
+
+        self.content.setLayout(
+            self.content_layout
+        )
+
+        self.scroll.setWidget(
+            self.content
+        )
+
+        self.scroll.setWidgetResizable(True)
+
+        self.scroll.setFrameShape(
+            QScrollArea.Shape.NoFrame
+        )
+
+        self.scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+
+        self.scroll.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+
+        layout.addWidget(
+            self.scroll
+        )
 
         self.setLayout(layout)
 
@@ -88,3 +126,28 @@ class Viewport(Panel):
     def clear(self):
 
         self.display.clear()
+
+    def mousePressEvent(self, event):
+
+        if event.button() == Qt.MouseButton.LeftButton:
+
+            self.previous_requested.emit()
+
+        elif event.button() == Qt.MouseButton.RightButton:
+
+            self.next_requested.emit()
+
+        super().mousePressEvent(event)
+
+
+    def mouseDoubleClickEvent(self, event):
+
+        if event.button() == Qt.MouseButton.LeftButton:
+
+            self.previous_group_requested.emit()
+
+        elif event.button() == Qt.MouseButton.RightButton:
+
+            self.next_group_requested.emit()
+
+        super().mouseDoubleClickEvent(event)

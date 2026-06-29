@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout
 )
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 
 from widgets.theme import (
     PRIMARY,
@@ -17,6 +17,8 @@ from services.maaya import Maaya
 
 class InfoCell(QWidget):
 
+    activated = pyqtSignal(str, str)
+
     def __init__(
         self,
         title,
@@ -27,6 +29,10 @@ class InfoCell(QWidget):
         super().__init__()
 
         self.maaya = Maaya()
+
+        self.title_text = title
+
+        self.value_text = str(value)
 
         self.title = QLabel(title)
 
@@ -95,17 +101,31 @@ class InfoCell(QWidget):
         layout.addWidget(self.icon)
         layout.addWidget(self.value)
 
+        for widget in (
+            self.title,
+            self.icon,
+            self.value
+        ):
+
+            widget.setAttribute(
+                Qt.WidgetAttribute.WA_TransparentForMouseEvents
+            )
+
         self.setLayout(layout)
 
     # =========================================
 
     def set_title(self, title):
 
+        self.title_text = title
+
         self.title.setText(title)
 
     # =========================================
 
     def set_value(self, value):
+
+        self.value_text = str(value)
 
         self.value.setText(
             str(value)
@@ -128,3 +148,14 @@ class InfoCell(QWidget):
     def clear_icon(self):
 
         self.icon.clear()
+
+    def mousePressEvent(self, event):
+
+        if event.button() == Qt.MouseButton.LeftButton:
+
+            self.activated.emit(
+                self.title_text,
+                self.value_text
+        )
+
+        super().mousePressEvent(event)

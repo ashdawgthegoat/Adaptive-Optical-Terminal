@@ -1,20 +1,62 @@
-class Kaizen:
+from PyQt6.QtCore import (
+    QObject,
+    pyqtSignal
+)
+
+class Kaizen(QObject):
+
+    focus_changed = pyqtSignal(str)
 
     def __init__(self):
 
-        self.regions = []
+        super().__init__()
 
-        self.current_index = 0
+        self.current_region = "navigation"
 
-    # ==========================================
-    # Registration
-    # ==========================================
+        self.panel_locked = False
 
-    def register(self, name):
+        self.graph = {
 
-        if name not in self.regions:
+            "navigation": {
 
-            self.regions.append(name)
+                "up": "header",
+                "right": "viewport",
+                "down": "footer",
+                "left": "context"
+
+            },
+
+            "header": {
+
+                "down": "navigation"
+
+            },
+
+            "viewport": {
+
+                "left": "navigation",
+                "right": "context",
+                "up": "header",
+                "down": "footer"
+
+            },
+
+            "context": {
+
+                "left": "viewport",
+                "right": "navigation",
+                "up": "header",
+                "down": "footer"
+
+            },
+
+            "footer": {
+
+                "up": "navigation"
+
+            }
+
+        }
 
     # ==========================================
     # Startup
@@ -22,15 +64,11 @@ class Kaizen:
 
     def initialize(self):
 
-        if "navigation" in self.regions:
+        self.current_region = "navigation"
 
-            self.current_index = self.regions.index(
-                "navigation"
-            )
-
-        else:
-
-            self.current_index = 0
+        self.focus_changed.emit(
+            self.current_region
+        )
 
     # ==========================================
     # Focus
@@ -38,59 +76,83 @@ class Kaizen:
 
     def current(self):
 
-        if not self.regions:
-
-            return None
-
-        return self.regions[
-            self.current_index
-        ]
+        return self.current_region
 
     def set_focus(self, name):
 
-        if name in self.regions:
+        if name not in self.graph:
 
-            self.current_index = self.regions.index(
-                name
-            )
+            return
+
+        self.current_region = name
+
+        self.focus_changed.emit(
+            self.current_region
+        )
 
     def has_focus(self, name):
 
         return self.current() == name
 
+    def is_locked(self):
+
+        return self.panel_locked
+
+
+    def toggle_lock(self):
+
+        self.panel_locked = not self.panel_locked
+
+        return self.panel_locked
+
+
+    def unlock(self):
+
+        self.panel_locked = False
+
     # ==========================================
     # Navigation
     # ==========================================
 
-    def next(self):
+    def move_left(self):
 
-        if not self.regions:
+        self._move("left")
 
-            return None
 
-        self.current_index += 1
+    def move_right(self):
 
-        if self.current_index >= len(self.regions):
+        self._move("right")
 
-            self.current_index = 0
 
-        return self.current()
+    def move_up(self):
 
-    def previous(self):
+        self._move("up")
 
-        if not self.regions:
 
-            return None
+    def move_down(self):
 
-        self.current_index -= 1
+        self._move("down")
 
-        if self.current_index < 0:
+    def _move(self, direction):
 
-            self.current_index = len(
-                self.regions
-            ) - 1
+        if self.panel_locked:
 
-        return self.current()
+            return
+
+        neighbours = self.graph.get(
+            self.current_region,
+            {}
+        )
+
+        if direction in neighbours:
+
+            self.current_region = neighbours[
+                direction
+            ]
+
+            self.focus_changed.emit(
+                self.current_region
+            )
 
     # ==========================================
     # Utilities
@@ -101,13 +163,3 @@ class Kaizen:
         self.current_index = 0
 
         self.initialize()
-
-    def count(self):
-
-        return len(
-            self.regions
-        )
-
-    def registered_regions(self):
-
-        return self.regions.copy()

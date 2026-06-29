@@ -1,7 +1,8 @@
 from PyQt6.QtWidgets import (
-    QFrame,
     QLabel,
-    QVBoxLayout
+    QVBoxLayout,
+    QScrollArea,
+    QWidget
 )
 
 from PyQt6.QtCore import Qt
@@ -34,20 +35,24 @@ class NavigationPanel(Panel):
 
         self.layout = QVBoxLayout()
 
-        self.layout.setContentsMargins(
+        self.scroll = QScrollArea()
+
+        self.content = QWidget()
+
+        self.content_layout = QVBoxLayout()
+
+        self.content_layout.setContentsMargins(
             10,
             10,
             10,
             10
         )
 
-        self.layout.setSpacing(12)
+        self.content_layout.setSpacing(12)
 
-        self.layout.setAlignment(
+        self.content_layout.setAlignment(
             Qt.AlignmentFlag.AlignTop
         )
-
-        self.setLayout(self.layout)
 
         self.title.setFont(SECTION_FONT)
 
@@ -59,13 +64,39 @@ class NavigationPanel(Panel):
             Qt.AlignmentFlag.AlignLeft
         )
 
-        self.layout.addWidget(self.title)
+        self.content_layout.addWidget(self.title)
 
-        self.layout.addSpacing(8)
+        self.content_layout.addSpacing(8)
 
         self.set_items(self.items)
 
-        self.layout.addStretch()
+        self.content_layout.addStretch()
+
+        self.content.setLayout(
+            self.content_layout
+        )
+
+        self.scroll.setWidget(
+            self.content
+        )
+
+        self.scroll.setWidgetResizable(True)
+
+        self.scroll.setFrameShape(
+            QScrollArea.Shape.NoFrame
+        )
+
+        self.scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+
+        self.layout.addWidget(
+            self.scroll
+        )
+
+        self.setLayout(
+            self.layout
+        )
 
         self.set_inactive()
 
@@ -84,11 +115,16 @@ class NavigationPanel(Panel):
 
             item = NavigationItem(text)
 
-            self.layout.addWidget(item)
+            item.clicked.connect(
+                lambda checked=False, i=len(self.nav_items):
+                self.select_item(i)
+            )
+
+            self.content_layout.addWidget(item)
 
             self.nav_items.append(item)
 
-            self.layout.addStretch()
+        self.content_layout.addStretch()
 
         self.update_selection()
 
@@ -130,3 +166,21 @@ class NavigationPanel(Panel):
         return self.items[
             self.current_selection
         ]
+
+    def select_item(self, index):
+
+        if 0 <= index < len(self.items):
+
+            self.current_selection = index
+
+            self.update_selection()
+
+    def clear_items(self):
+
+        while self.content_layout.count():
+
+            item = self.content_layout.takeAt(0)
+
+            if item.widget():
+
+                item.widget().deleteLater()
