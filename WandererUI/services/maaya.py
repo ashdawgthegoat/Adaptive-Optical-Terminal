@@ -7,6 +7,8 @@ from PyQt6.QtCore import (
     pyqtSignal,
 )
 
+from PyQt6.QtGui import QFontDatabase
+
 
 class Maaya(QObject):
 
@@ -25,9 +27,10 @@ class Maaya(QObject):
         # =====================================
 
         self.theme = None
-        self.typography = None
+        self.font = None
         self.wallpaper = None
-        self.icon_pack = None
+        self.sound = None
+        self.animation = None
 
         # =====================================
         # Animation
@@ -63,20 +66,97 @@ class Maaya(QObject):
 
     def available_fonts(self):
 
-        return self.available_packages("fonts")
+        directory = self.assets_root / "fonts"
 
-    def available_wallpapers(self,category="static"):
+        if not directory.exists():
+            return []
 
-        return self.available_packages(
-            f"wallpapers/{category}"
+        return sorted(
+
+            file.name
+
+            for file in directory.iterdir()
+
+            if (
+                file.is_file()
+                and file.suffix.lower() in {
+                    ".ttf",
+                    ".otf"
+                }
+            )
         )
 
-    def available_icons(self):
+    def available_wallpapers(self, category="static"):
 
-        return self.available_packages("icons")
+        directory = (
+            self.assets_root
+            / "wallpapers"
+            / category
+        )
+
+        if not directory.exists():
+            return []
+
+        supported = {
+            ".txt",
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".gif",
+            ".mp4",
+        }
+
+        return sorted(
+
+            file.name
+
+            for file in directory.iterdir()
+
+            if (
+                file.is_file()
+                and file.suffix.lower() in supported
+            )
+
+        )
+
+    def available_sounds(self):
+
+        directory = self.assets_root / "sounds"
+
+        if not directory.exists():
+            return []
+
+        supported = {
+            ".wav",
+            ".mp3",
+            ".ogg",
+            ".flac",
+        }
+
+        return sorted(
+
+            file.name
+
+            for file in directory.iterdir()
+
+            if (
+                file.is_file()
+                and file.suffix.lower() in supported
+            )
+
+        )
+
+    def available_animations(
+        self,
+        category
+    ):
+
+        return self.available_packages(
+            f"animations/{category}"
+        )
 
     # =====================================================
-    # Generic Package Loader
+    # Theme Loader
     # =====================================================
 
     def load_package(self, category, package):
@@ -122,73 +202,124 @@ class Maaya(QObject):
 
         return self.theme
 
-    def load_font(self, package):
+    def load_font(
+        self,
+        filename
+    ):
 
-        self.typography = self.load_package(
-            "fonts",
-            package
+        file = (
+            self.assets_root
+            / "fonts"
+            / filename
         )
 
-        return self.typography
+        if not file.exists():
 
-    def load_wallpaper(self,category,package):
+            return None
 
-        folder = (
+        font_id = QFontDatabase.addApplicationFont(
+            str(file)
+        )
+
+        if font_id == -1:
+
+            return None
+
+        family = QFontDatabase.applicationFontFamilies(
+            font_id
+        )
+
+        if not family:
+
+            return None
+
+        self.font = family[0]
+
+        return self.font
+
+    def load_wallpaper(
+        self,
+        category,
+        filename
+    ):
+
+        file = (
             self.assets_root
             / "wallpapers"
             / category
-            / package
+            / filename
         )
 
-        if not folder.exists():
+        if not file.exists():
 
             return None
 
         supported = {
+
             ".txt": "ascii",
+
             ".png": "image",
+
             ".jpg": "image",
+
             ".jpeg": "image",
+
             ".gif": "live",
+
             ".mp4": "live",
+
         }
 
-        for file in folder.iterdir():
-
-            suffix = file.suffix.lower()
-
-            if suffix in supported:
-
-                self.wallpaper = {
-
-                    "type": supported[suffix],
-
-                    "path": file,
-
-                    "package": package,
-
-                    "category": category
-
-                }
-
-                return self.wallpaper
-
-        return None
-
-    def load_icon_pack(self, package):
-
-        self.icon_pack = self.load_package(
-            "icons",
-            package
+        wallpaper_type = supported.get(
+            file.suffix.lower()
         )
 
-        return self.icon_pack
+        if wallpaper_type is None:
+
+            return None
+
+        self.wallpaper = {
+
+            "type": wallpaper_type,
+
+            "path": file,
+
+            "filename": filename,
+
+            "category": category,
+
+        }
+
+        return self.wallpaper
+
+    def load_sound(
+        self,
+        filename
+    ):
+
+        file = (
+            self.assets_root
+            / "sounds"
+            / filename
+        )
+
+        if not file.exists():
+
+            return None
+
+        self.sound = file
+
+        return self.sound
 
     # =====================================================
     # Animation
     # =====================================================
 
-    def set_animation(self, name):
+    def load_animation(
+        self,
+        category,
+        package
+    ):
 
         self.stop()
 
@@ -199,27 +330,105 @@ class Maaya(QObject):
         folder = (
             self.assets_root
             / "animations"
-            / name
+            / category
+            / package
         )
 
         if not folder.exists():
-            return
+            return None
 
-        files = sorted(folder.glob("*.txt"))
+        files = sorted(
+            file
+            for file in folder.iterdir()
+            if file.is_file()
+        )
 
-        for file in files:
+        if not files:
+            return None
 
-            self.frames.append(
-                file.read_text(
-                    encoding="utf-8"
+        frame_sequence = {
+            ".txt",
+            ".png",
+            ".jpg",
+            ".jpeg",
+        }
+
+        native = {
+            ".gif",
+            ".mp4",
+        }
+
+        extension = files[0].suffix.lower()
+
+        # -------------------------------------
+        # Frame Sequence Animation
+        # -------------------------------------
+
+        if extension in frame_sequence:
+
+            for file in files:
+
+                if file.suffix.lower() != extension:
+                    return None
+
+            self.animation = {
+
+                "type": "frames",
+
+                "category": category,
+
+                "package": package,
+
+            }
+
+            if extension == ".txt":
+
+                for file in files:
+
+                    self.frames.append(
+                        file.read_text(
+                            encoding="utf-8"
+                        )
+                    )
+
+            else:
+
+                self.frames.extend(files)
+
+            if self.frames:
+
+                self.frame_changed.emit(
+                    self.frames[0]
+                    if extension == ".txt"
+                    else str(self.frames[0])
                 )
-            )
 
-        if self.frames:
+            return self.animation
 
-            self.frame_changed.emit(
-                self.frames[0]
-            )
+        # -------------------------------------
+        # Native Animation
+        # -------------------------------------
+
+        if extension in native:
+
+            if len(files) != 1:
+                return None
+
+            self.animation = {
+
+                "type": "native",
+
+                "path": files[0],
+
+                "category": category,
+
+                "package": package,
+
+            }
+
+            return self.animation
+
+        return None
 
     def play(self):
 
