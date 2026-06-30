@@ -6,14 +6,10 @@ from PyQt6.QtWidgets import (
 )
 
 from PyQt6.QtCore import Qt, pyqtSignal
-from widgets.theme import (
-    PRIMARY,
-    BODY_FONT,
-    SECTION_FONT
-)
+from PyQt6.QtGui import QFont
 
-from services.maaya import Maaya
 from widgets.panel import Panel
+
 
 class Viewport(Panel):
 
@@ -23,14 +19,22 @@ class Viewport(Panel):
     next_group_requested = pyqtSignal()
     previous_group_requested = pyqtSignal()
 
-    def __init__(self):
-        super().__init__()
+    def __init__(
+        self,
+        maaya
+    ):
+
+        super().__init__(maaya)
+
+        self.maaya = maaya
+
+        self.palette = self.maaya.theme.Palette
+
+        self.typography = self.maaya.typography()
 
         self.title = QLabel("VIEWPORT")
 
         self.display = QLabel()
-
-        self.maaya = Maaya()
 
         self.maaya.frame_changed.connect(
             self.show_ascii
@@ -48,33 +52,54 @@ class Viewport(Panel):
 
         self.content_layout = QVBoxLayout()
 
-        self.content_layout.setContentsMargins(10, 10, 10, 10)
+        self.content_layout.setContentsMargins(
+            10,
+            10,
+            10,
+            10
+        )
 
         self.content_layout.setSpacing(0)
 
-        self.title.setFont(SECTION_FONT)
-        self.title.setStyleSheet(f"color: {PRIMARY};")
-        self.title.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.title.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.SECTION_SIZE
+            )
+        )
 
-        self.content_layout.addWidget(self.title)
+        self.title.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.title.setAlignment(
+            Qt.AlignmentFlag.AlignLeft
+        )
+
+        self.content_layout.addWidget(
+            self.title
+        )
 
         self.content_layout.addStretch()
 
-        self.display.setFont(BODY_FONT)
+        self.display.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.BODY_SIZE
+            )
+        )
 
         self.display.setAlignment(
             Qt.AlignmentFlag.AlignCenter
         )
 
         self.display.setStyleSheet(
-            f"color: {PRIMARY};"
+            f"color: {self.palette.PRIMARY};"
         )
-
-        self.show_ascii(self.maaya.get_logo("wanderer"))
 
         self.content_layout.addWidget(
             self.display,
-            alignment=Qt.AlignmentFlag.AlignCenter
+            alignment=self.maaya.wallpaper_alignment
         )
 
         self.content_layout.addStretch()
@@ -87,7 +112,9 @@ class Viewport(Panel):
             self.content
         )
 
-        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidgetResizable(
+            True
+        )
 
         self.scroll.setFrameShape(
             QScrollArea.Shape.NoFrame
@@ -105,21 +132,50 @@ class Viewport(Panel):
             self.scroll
         )
 
-        self.setLayout(layout)
+        self.setLayout(
+            layout
+        )
 
         self.set_inactive()
 
-    def show_ascii(self,ascii_art):
+    def show_ascii(
+        self,
+        ascii_art
+    ):
 
         self.display.setText(
             ascii_art
         )
-    
-    def play_animation(self, name, fps=10):
 
-        self.maaya.set_fps(fps)
+    def show_wallpaper(self):
 
-        self.maaya.set_animation(name)
+        wallpaper = self.maaya.wallpaper
+
+        if wallpaper is None:
+            return
+
+        if wallpaper["type"] == "ascii":
+
+            self.show_ascii(
+                wallpaper["path"].read_text(
+                    encoding="utf-8"
+                )
+            )
+
+    def play_animation(
+        self,
+        package,
+        fps=10
+    ):
+
+        self.maaya.set_fps(
+            fps
+        )
+
+        self.maaya.load_animation(
+            "loading",
+            package
+        )
 
         self.maaya.play()
 
@@ -127,7 +183,10 @@ class Viewport(Panel):
 
         self.display.clear()
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(
+        self,
+        event
+    ):
 
         if event.button() == Qt.MouseButton.LeftButton:
 
@@ -137,10 +196,14 @@ class Viewport(Panel):
 
             self.next_requested.emit()
 
-        super().mousePressEvent(event)
+        super().mousePressEvent(
+            event
+        )
 
-
-    def mouseDoubleClickEvent(self, event):
+    def mouseDoubleClickEvent(
+        self,
+        event
+    ):
 
         if event.button() == Qt.MouseButton.LeftButton:
 
@@ -150,4 +213,6 @@ class Viewport(Panel):
 
             self.next_group_requested.emit()
 
-        super().mouseDoubleClickEvent(event)
+        super().mouseDoubleClickEvent(
+            event
+        )

@@ -22,7 +22,7 @@ class Palette:
     SEPARATOR = "#303030"
 
 
-class Metrics:
+class Spacing:
 
     OUTER_MARGIN = 24
 

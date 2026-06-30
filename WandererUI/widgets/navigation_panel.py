@@ -6,20 +6,27 @@ from PyQt6.QtWidgets import (
 )
 
 from PyQt6.QtCore import Qt
-
-from widgets.theme import (
-    SECTION_FONT,
-    PRIMARY,
-    ACCENT
-)
+from PyQt6.QtGui import QFont
 
 from widgets.navigation_item import NavigationItem
 from widgets.panel import Panel
 
+
 class NavigationPanel(Panel):
 
-    def __init__(self, items=None):
-        super().__init__()
+    def __init__(
+        self,
+        maaya,
+        items=None
+    ):
+
+        super().__init__(maaya)
+
+        self.maaya = maaya
+
+        self.palette = self.maaya.theme.Palette
+        self.spacing = self.maaya.theme.Spacing
+        self.typography = self.maaya.typography()
 
         self.title = QLabel("MAIN MENU")
 
@@ -48,27 +55,40 @@ class NavigationPanel(Panel):
             10
         )
 
-        self.content_layout.setSpacing(12)
+        self.content_layout.setSpacing(
+            self.spacing.ITEM_SPACING
+        )
 
         self.content_layout.setAlignment(
             Qt.AlignmentFlag.AlignTop
         )
 
-        self.title.setFont(SECTION_FONT)
+        self.title.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.SECTION_SIZE
+            )
+        )
 
         self.title.setStyleSheet(
-            f"color: {PRIMARY};"
+            f"color: {self.palette.PRIMARY};"
         )
 
         self.title.setAlignment(
             Qt.AlignmentFlag.AlignLeft
         )
 
-        self.content_layout.addWidget(self.title)
+        self.content_layout.addWidget(
+            self.title
+        )
 
-        self.content_layout.addSpacing(8)
+        self.content_layout.addSpacing(
+            8
+        )
 
-        self.set_items(self.items)
+        self.set_items(
+            self.items
+        )
 
         self.content_layout.addStretch()
 
@@ -80,7 +100,9 @@ class NavigationPanel(Panel):
             self.content
         )
 
-        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidgetResizable(
+            True
+        )
 
         self.scroll.setFrameShape(
             QScrollArea.Shape.NoFrame
@@ -100,29 +122,40 @@ class NavigationPanel(Panel):
 
         self.set_inactive()
 
-    def set_items(self, items):
+    def set_items(
+        self,
+        items
+    ):
 
         self.items = items
 
         self.current_selection = 0
 
         for item in self.nav_items:
+
             item.deleteLater()
 
         self.nav_items.clear()
 
         for text in self.items:
 
-            item = NavigationItem(text)
+            item = NavigationItem(
+                self.maaya,
+                text
+            )
 
             item.clicked.connect(
                 lambda checked=False, i=len(self.nav_items):
                 self.select_item(i)
             )
 
-            self.content_layout.addWidget(item)
+            self.content_layout.addWidget(
+                item
+            )
 
-            self.nav_items.append(item)
+            self.nav_items.append(
+                item
+            )
 
         self.content_layout.addStretch()
 
@@ -139,6 +172,7 @@ class NavigationPanel(Panel):
     def move_up(self):
 
         if not self.items:
+
             return
 
         self.current_selection = (
@@ -150,6 +184,7 @@ class NavigationPanel(Panel):
     def move_down(self):
 
         if not self.items:
+
             return
 
         self.current_selection = (
@@ -161,13 +196,17 @@ class NavigationPanel(Panel):
     def current_item(self):
 
         if not self.items:
+
             return None
 
         return self.items[
             self.current_selection
         ]
 
-    def select_item(self, index):
+    def select_item(
+        self,
+        index
+    ):
 
         if 0 <= index < len(self.items):
 

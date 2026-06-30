@@ -4,15 +4,12 @@ from PyQt6.QtWidgets import (
     QVBoxLayout
 )
 
-from PyQt6.QtCore import Qt, pyqtSignal
-
-from widgets.theme import (
-    PRIMARY,
-    SECONDARY,
-    SMALL_FONT
+from PyQt6.QtCore import (
+    Qt,
+    pyqtSignal
 )
 
-from services.maaya import Maaya
+from PyQt6.QtGui import QFont
 
 
 class InfoCell(QWidget):
@@ -21,6 +18,7 @@ class InfoCell(QWidget):
 
     def __init__(
         self,
+        maaya,
         title,
         value="",
         icon=None
@@ -28,7 +26,11 @@ class InfoCell(QWidget):
 
         super().__init__()
 
-        self.maaya = Maaya()
+        self.maaya = maaya
+
+        self.palette = self.maaya.theme.Palette
+
+        self.typography = self.maaya.typography()
 
         self.title_text = title
 
@@ -61,36 +63,35 @@ class InfoCell(QWidget):
 
         layout.setSpacing(2)
 
-        self.title.setFont(
-            SMALL_FONT
+        font = QFont(
+            self.maaya.font["family"],
+            self.typography.FOOTER_SIZE
         )
 
+        self.title.setFont(font)
+
         self.title.setStyleSheet(
-            f"color: {PRIMARY};"
+            f"color: {self.palette.PRIMARY};"
         )
 
         self.title.setAlignment(
             Qt.AlignmentFlag.AlignLeft
         )
 
-        self.icon.setFont(
-            SMALL_FONT
-        )
+        self.icon.setFont(font)
 
         self.icon.setStyleSheet(
-            f"color: {PRIMARY};"
+            f"color: {self.palette.PRIMARY};"
         )
 
         self.icon.setAlignment(
             Qt.AlignmentFlag.AlignCenter
         )
 
-        self.value.setFont(
-            SMALL_FONT
-        )
+        self.value.setFont(font)
 
         self.value.setStyleSheet(
-            f"color: {SECONDARY};"
+            f"color: {self.palette.SECONDARY};"
         )
 
         self.value.setAlignment(
@@ -115,7 +116,10 @@ class InfoCell(QWidget):
 
     # =========================================
 
-    def set_title(self, title):
+    def set_title(
+        self,
+        title
+    ):
 
         self.title_text = title
 
@@ -123,7 +127,10 @@ class InfoCell(QWidget):
 
     # =========================================
 
-    def set_value(self, value):
+    def set_value(
+        self,
+        value
+    ):
 
         self.value_text = str(value)
 
@@ -133,14 +140,13 @@ class InfoCell(QWidget):
 
     # =========================================
 
-    def set_icon(self, icon_name):
+    def set_icon(
+        self,
+        glyph
+    ):
 
         self.icon.setText(
-
-            self.maaya.get_icon(
-                icon_name
-            )
-
+            glyph
         )
 
     # =========================================
@@ -149,13 +155,20 @@ class InfoCell(QWidget):
 
         self.icon.clear()
 
-    def mousePressEvent(self, event):
+    # =========================================
+
+    def mousePressEvent(
+        self,
+        event
+    ):
 
         if event.button() == Qt.MouseButton.LeftButton:
 
             self.activated.emit(
                 self.title_text,
                 self.value_text
-        )
+            )
 
-        super().mousePressEvent(event)
+        super().mousePressEvent(
+            event
+        )

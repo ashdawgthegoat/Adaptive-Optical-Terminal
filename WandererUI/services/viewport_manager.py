@@ -4,20 +4,18 @@ class ViewportManager:
 
         self.viewport = viewport
 
-    def show_static(self, name):
+    def show_wallpaper(self):
 
-        self.viewport.show_ascii(
-            name
-        )
+        self.viewport.show_wallpaper()
 
     def show_animation(
         self,
-        name,
+        package,
         fps=10
     ):
 
         self.viewport.play_animation(
-            name,
+            package,
             fps
         )
 

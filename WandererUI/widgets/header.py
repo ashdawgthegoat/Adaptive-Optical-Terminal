@@ -1,21 +1,17 @@
 from PyQt6.QtWidgets import (
-    QFrame,
     QLabel,
     QHBoxLayout,
-    QVBoxLayout
 )
 
-from PyQt6.QtCore import Qt, pyqtSignal
-from widgets.theme import (
-    TITLE_FONT,
-    BODY_FONT,
-    PRIMARY,
-    ACCENT,
-    ITEM_SPACING,
-    SUBTITLE_FONT
+from PyQt6.QtCore import (
+    Qt,
+    pyqtSignal,
 )
+
+from PyQt6.QtGui import QFont
 
 from widgets.panel import Panel
+
 
 class Header(Panel):
 
@@ -31,27 +27,49 @@ class Header(Panel):
 
     def __init__(
         self,
+        maaya,
         title="WANDERER",
         subtitle="MK II Alpha"
     ):
-        super().__init__()
+
+        super().__init__(maaya)
+
+        self.maaya = maaya
+
+        self.palette = self.maaya.theme.Palette
+
+        self.spacing = self.maaya.theme.Spacing
+
+        self.typography = self.maaya.typography()
 
         self.title = QLabel(title)
+
         self.subtitle = QLabel(subtitle)
 
         self.build_ui()
 
     def build_ui(self):
 
-        self.title.setFont(TITLE_FONT)
-        self.subtitle.setFont(SUBTITLE_FONT)
+        self.title.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.TITLE_SIZE
+            )
+        )
+
+        self.subtitle.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.BODY_SIZE
+            )
+        )
 
         self.title.setStyleSheet(
-            f"color: {PRIMARY};"
+            f"color: {self.palette.PRIMARY};"
         )
 
         self.subtitle.setStyleSheet(
-            f"color: {ACCENT};"
+            f"color: {self.palette.ACCENT};"
         )
 
         self.title.setAlignment(
@@ -61,8 +79,8 @@ class Header(Panel):
         title_layout = QHBoxLayout()
 
         title_layout.setSpacing(
-            30
-        )  
+            self.spacing.ITEM_SPACING
+        )
 
         title_layout.addWidget(
             self.title
@@ -98,24 +116,34 @@ class Header(Panel):
 
         self.set_inactive()
 
-    def set_title(self,title,subtitle=None):
+    def set_title(
+        self,
+        title,
+        subtitle=None
+    ):
 
-        self.title.setText(title)
+        self.title.setText(
+            title
+        )
 
-        self.subtitle.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        self.subtitle.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter
+        )
 
         if subtitle is not None:
+
             self.subtitle.setText(
                 subtitle
             )
 
         self.subtitle.setStyleSheet(
-            f"""
-            color: {ACCENT};
-            """
+            f"color: {self.palette.ACCENT};"
         )
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(
+        self,
+        event
+    ):
 
         match event.key():
 
@@ -135,12 +163,19 @@ class Header(Panel):
                 self.activated.emit()
 
             case _:
-                super().keyPressEvent(event)
+                super().keyPressEvent(
+                    event
+                )
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(
+        self,
+        event
+    ):
 
         if event.button() == Qt.MouseButton.LeftButton:
 
             self.activated.emit()
 
-        super().mousePressEvent(event)
+        super().mousePressEvent(
+            event
+        )

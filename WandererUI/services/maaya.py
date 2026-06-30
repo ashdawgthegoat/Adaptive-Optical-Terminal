@@ -5,6 +5,7 @@ from PyQt6.QtCore import (
     QObject,
     QTimer,
     pyqtSignal,
+    Qt
 )
 
 from PyQt6.QtGui import QFontDatabase
@@ -31,6 +32,9 @@ class Maaya(QObject):
         self.wallpaper = None
         self.sound = None
         self.animation = None
+        self.wallpaper_alignment = (
+            Qt.AlignmentFlag.AlignCenter
+        )
 
         # =====================================
         # Animation
@@ -66,25 +70,7 @@ class Maaya(QObject):
 
     def available_fonts(self):
 
-        directory = self.assets_root / "fonts"
-
-        if not directory.exists():
-            return []
-
-        return sorted(
-
-            file.name
-
-            for file in directory.iterdir()
-
-            if (
-                file.is_file()
-                and file.suffix.lower() in {
-                    ".ttf",
-                    ".otf"
-                }
-            )
-        )
+        return self.available_packages("fonts")
 
     def available_wallpapers(self, category="static"):
 
@@ -204,25 +190,41 @@ class Maaya(QObject):
 
     def load_font(
         self,
-        filename
+        package
     ):
 
-        file = (
+        folder = (
             self.assets_root
             / "fonts"
-            / filename
+            / package
         )
 
-        if not file.exists():
+        if not folder.exists():
+            return None
 
+        font_file = next(
+            (
+                file
+                for file in folder.iterdir()
+                if (
+                    file.is_file()
+                    and file.suffix.lower() in {
+                        ".ttf",
+                        ".otf"
+                    }
+                )
+            ),
+            None
+        )
+
+        if font_file is None:
             return None
 
         font_id = QFontDatabase.addApplicationFont(
-            str(file)
+            str(font_file)
         )
 
         if font_id == -1:
-
             return None
 
         family = QFontDatabase.applicationFontFamilies(
@@ -230,12 +232,62 @@ class Maaya(QObject):
         )
 
         if not family:
-
             return None
 
-        self.font = family[0]
+        typography = (
+            folder
+            / "typography.py"
+        )
+
+        if typography.exists():
+
+            spec = importlib.util.spec_from_file_location(
+                f"fonts.{package}.typography",
+                typography
+            )
+
+            module = importlib.util.module_from_spec(spec)
+
+            spec.loader.exec_module(module)
+
+        else:
+
+            module = None
+
+        self.font = {
+
+            "family": family[0],
+
+            "typography": module,
+
+            "package": package,
+
+        }
 
         return self.font
+
+    def typography(self):
+
+        if (
+            self.font
+            and self.font["typography"]
+        ):
+
+            return self.font["typography"].Typography
+
+        class DefaultTypography:
+
+            TITLE_SIZE = 20
+
+            SECTION_SIZE = 14
+
+            BODY_SIZE = 12
+
+            FOOTER_SIZE = 11
+
+            MONO_SIZE = 12
+
+        return DefaultTypography
 
     def load_wallpaper(
         self,
@@ -291,6 +343,13 @@ class Maaya(QObject):
         }
 
         return self.wallpaper
+
+    def set_wallpaper_alignment(
+        self,
+        alignment
+    ):
+
+        self.wallpaper_alignment = alignment
 
     def load_sound(
         self,
@@ -351,6 +410,7 @@ class Maaya(QObject):
             ".png",
             ".jpg",
             ".jpeg",
+            ".svg",
         }
 
         native = {

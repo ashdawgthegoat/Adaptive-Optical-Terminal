@@ -7,12 +7,7 @@ from PyQt6.QtWidgets import (
 )
 
 from PyQt6.QtCore import Qt
-
-from widgets.theme import (
-    PRIMARY,
-    SECTION_FONT,
-    ACCENT
-)
+from PyQt6.QtGui import QFont
 
 from widgets.info_cell import InfoCell
 from widgets.panel import Panel
@@ -20,9 +15,16 @@ from widgets.panel import Panel
 
 class ContextPanel(Panel):
 
-    def __init__(self):
+    def __init__(self, maaya):
 
-        super().__init__()
+        super().__init__(maaya)
+
+        self.maaya = maaya
+
+        self.palette = self.maaya.theme.Palette
+        self.spacing = self.maaya.theme.Spacing
+        self.borders = self.maaya.theme.Borders
+        self.typography = self.maaya.typography()
 
         self.build_ui()
 
@@ -45,7 +47,9 @@ class ContextPanel(Panel):
             10
         )
 
-        self.main_layout.setSpacing(8)
+        self.main_layout.setSpacing(
+            self.spacing.ITEM_SPACING
+        )
 
         # ============================
         # SYSTEM SECTION
@@ -56,11 +60,14 @@ class ContextPanel(Panel):
         )
 
         self.system_title.setFont(
-            SECTION_FONT
+            QFont(
+                self.maaya.font["family"],
+                self.typography.SECTION_SIZE
+            )
         )
 
         self.system_title.setStyleSheet(
-            f"color: {PRIMARY};"
+            f"color: {self.palette.PRIMARY};"
         )
 
         self.system_title.setAlignment(
@@ -90,11 +97,13 @@ class ContextPanel(Panel):
             QFrame.Shape.HLine
         )
 
-        divider.setFixedHeight(1)
+        divider.setFixedHeight(
+            self.borders.WIDTH
+        )
 
         divider.setStyleSheet(
             f"""
-            background-color: {ACCENT};
+            background-color: {self.palette.ACCENT};
             """
         )
 
@@ -111,11 +120,14 @@ class ContextPanel(Panel):
         )
 
         self.module_title.setFont(
-            SECTION_FONT
+            QFont(
+                self.maaya.font["family"],
+                self.typography.SECTION_SIZE
+            )
         )
 
         self.module_title.setStyleSheet(
-            f"color: {PRIMARY};"
+            f"color: {self.palette.PRIMARY};"
         )
 
         self.main_layout.addWidget(
@@ -192,6 +204,7 @@ class ContextPanel(Panel):
         for key, value in info.items():
 
             cell = InfoCell(
+                self.maaya,
                 title=key,
                 value=value
             )
@@ -213,6 +226,7 @@ class ContextPanel(Panel):
         for key, value in info.items():
 
             cell = InfoCell(
+                self.maaya,
                 title=key,
                 value=value
             )

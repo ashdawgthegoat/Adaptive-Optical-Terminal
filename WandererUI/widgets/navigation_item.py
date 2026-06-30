@@ -4,25 +4,34 @@ from PyQt6.QtWidgets import (
     QHBoxLayout
 )
 
-from PyQt6.QtCore import (Qt, pyqtSignal)
-
-from widgets.theme import (
-    SECTION_FONT,
-    PRIMARY,
-    SECONDARY,
-    ACCENT,
-    SURFACE
+from PyQt6.QtCore import (
+    Qt,
+    pyqtSignal
 )
+
+from PyQt6.QtGui import QFont
 
 
 class NavigationItem(QFrame):
 
     clicked = pyqtSignal()
 
-    def __init__(self, text):
+    def __init__(
+        self,
+        maaya,
+        text
+    ):
+
         super().__init__()
 
+        self.maaya = maaya
+
+        self.palette = self.maaya.theme.Palette
+
+        self.typography = self.maaya.typography()
+
         self.text = text
+
         self.selected = False
 
         self.build_ui()
@@ -32,55 +41,88 @@ class NavigationItem(QFrame):
         self.setFixedHeight(56)
 
         self.layout = QHBoxLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
 
-        self.setLayout(self.layout)
-
-        # Permanent left accent line
-        self.accent = QFrame()
-        self.accent.setFixedWidth(2)
-        self.accent.setStyleSheet(
-            f"background-color: {ACCENT};"
+        self.layout.setContentsMargins(
+            0,
+            0,
+            0,
+            0
         )
 
-        # Menu text
-        self.label = QLabel(self.text)
+        self.layout.setSpacing(0)
+
+        self.setLayout(
+            self.layout
+        )
+
+        self.accent = QFrame()
+
+        self.accent.setFixedWidth(2)
+
+        self.accent.setStyleSheet(
+            f"background-color: {self.palette.ACCENT};"
+        )
+
+        self.label = QLabel(
+            self.text
+        )
+
         self.label.setAttribute(
             Qt.WidgetAttribute.WA_TransparentForMouseEvents
         )
-        self.label.setFont(SECTION_FONT)
+
+        self.label.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.SECTION_SIZE
+            )
+        )
+
         self.label.setAlignment(
-            Qt.AlignmentFlag.AlignVCenter |
+            Qt.AlignmentFlag.AlignVCenter
+            |
             Qt.AlignmentFlag.AlignLeft
         )
 
-        self.layout.addWidget(self.accent)
+        self.layout.addWidget(
+            self.accent
+        )
+
         self.layout.addSpacing(12)
-        self.layout.addWidget(self.label)
+
+        self.layout.addWidget(
+            self.label
+        )
+
         self.layout.addStretch()
 
         self.update_style()
 
-    def set_selected(self, selected):
+    def set_selected(
+        self,
+        selected
+    ):
 
         self.selected = selected
+
         self.update_style()
 
     def update_style(self):
 
         if self.selected:
 
-            self.label.setText(f">  {self.text}")
+            self.label.setText(
+                f">  {self.text}"
+            )
 
             self.setStyleSheet(
                 f"""
                 QFrame {{
-                    background-color: {SURFACE};
+                    background-color: {self.palette.SURFACE};
                 }}
 
                 QLabel {{
-                    color: {PRIMARY};
+                    color: {self.palette.PRIMARY};
                     padding-left: 6px;
                 }}
                 """
@@ -88,7 +130,9 @@ class NavigationItem(QFrame):
 
         else:
 
-            self.label.setText(f"   {self.text}")
+            self.label.setText(
+                f"   {self.text}"
+            )
 
             self.setStyleSheet(
                 f"""
@@ -97,16 +141,21 @@ class NavigationItem(QFrame):
                 }}
 
                 QLabel {{
-                    color: {SECONDARY};
+                    color: {self.palette.SECONDARY};
                     padding-left: 6px;
                 }}
                 """
             )
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(
+        self,
+        event
+    ):
 
         if event.button() == Qt.MouseButton.LeftButton:
 
             self.clicked.emit()
 
-        super().mousePressEvent(event)
+        super().mousePressEvent(
+            event
+        )

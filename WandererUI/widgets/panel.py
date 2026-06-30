@@ -4,18 +4,23 @@ from PyQt6.QtCore import (
     Qt
 )
 
-from widgets.theme import (
-    ACCENT
-)
-
 
 class Panel(QFrame):
 
-    clicked =pyqtSignal()
+    clicked = pyqtSignal()
 
-    def __init__(self):
+    def __init__(
+        self,
+        maaya
+    ):
 
         super().__init__()
+
+        self.maaya = maaya
+
+        self.palette = self.maaya.theme.Palette
+
+        self.borders = self.maaya.theme.Borders
 
         self.active = False
 
@@ -54,7 +59,7 @@ class Panel(QFrame):
             self.setStyleSheet(
                 f"""
                 QFrame#panel {{
-                    border: 1px solid {ACCENT};
+                    border: {self.borders.ACTIVE_WIDTH}px solid {self.palette.ACCENT};
                 }}
                 """
             )
@@ -62,12 +67,14 @@ class Panel(QFrame):
         else:
 
             self.setStyleSheet(
-                """
-                QFrame#panel {
-                    border: 1px solid #303030;
-                }
+                f"""
+                QFrame#panel {{
+                    border: {self.borders.WIDTH}px solid {self.palette.SEPARATOR};
+                }}
                 """
             )
+
+    # =========================================
 
     def mousePressEvent(self, event):
 

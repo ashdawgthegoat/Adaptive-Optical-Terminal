@@ -1,10 +1,8 @@
 import sys
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, 
-    QLabel, QStackedWidget, QPlainTextEdit
+    QApplication, QMainWindow, QStackedWidget
 )
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QFont, QPixmap
 
 from screens.observe_screen import ObserveScreen
 from screens.main_menu_screen import MainMenuScreen

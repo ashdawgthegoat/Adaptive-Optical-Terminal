@@ -2,7 +2,6 @@ from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QFrame
 )
 
 from widgets.header import Header
@@ -10,42 +9,56 @@ from widgets.footer import Footer
 from widgets.navigation_panel import NavigationPanel
 from widgets.viewport import Viewport
 from widgets.context_panel import ContextPanel
-from widgets.theme import (
-    OUTER_MARGIN,
-    INNER_MARGIN,
-    SECTION_SPACING,
-)
+
 
 class MainLayout(QWidget):
 
-    def __init__(self):
+    def __init__(
+        self,
+        maaya
+    ):
+
         super().__init__()
 
-        self.header = Header()
+        self.maaya = maaya
 
-        self.navigation = NavigationPanel()
+        self.header = Header(
+            self.maaya
+        )
 
-        self.viewport = Viewport()
+        self.navigation = NavigationPanel(
+            self.maaya
+        )
 
-        self.context = ContextPanel()
+        self.viewport = Viewport(
+            self.maaya
+        )
 
-        self.footer = Footer()
+        self.context = ContextPanel(
+            self.maaya
+        )
+
+        self.footer = Footer(
+            self.maaya
+        )
 
         self.build_ui()
 
     def build_ui(self):
 
+        spacing = self.maaya.theme.Spacing
+
         main_layout = QVBoxLayout()
 
         main_layout.setContentsMargins(
-            OUTER_MARGIN,
-            OUTER_MARGIN,
-            OUTER_MARGIN,
-            OUTER_MARGIN
+            spacing.OUTER_MARGIN,
+            spacing.OUTER_MARGIN,
+            spacing.OUTER_MARGIN,
+            spacing.OUTER_MARGIN
         )
 
         main_layout.setSpacing(
-            SECTION_SPACING
+            spacing.SECTION_SPACING
         )
 
         body_layout = QHBoxLayout()
@@ -53,48 +66,75 @@ class MainLayout(QWidget):
         body_layout.setSpacing(4)
 
         body_layout.setContentsMargins(
-            INNER_MARGIN,
+            spacing.INNER_MARGIN,
             0,
-            INNER_MARGIN,
+            spacing.INNER_MARGIN,
             0
         )
 
-        header_layout=QHBoxLayout()
+        header_layout = QHBoxLayout()
 
         header_layout.setContentsMargins(
-            INNER_MARGIN,
+            spacing.INNER_MARGIN,
             0,
-            INNER_MARGIN,
+            spacing.INNER_MARGIN,
             0
         )
 
-        header_layout.addWidget(self.header)
+        header_layout.addWidget(
+            self.header
+        )
 
-        main_layout.addLayout(header_layout)
+        main_layout.addLayout(
+            header_layout
+        )
 
-        body_layout.addWidget(self.navigation,2)
+        body_layout.addWidget(
+            self.navigation,
+            2
+        )
 
-        body_layout.addWidget(self.viewport,6)
+        body_layout.addWidget(
+            self.viewport,
+            6
+        )
 
-        body_layout.addWidget(self.context,2)
+        body_layout.addWidget(
+            self.context,
+            2
+        )
 
-        main_layout.addLayout(body_layout, stretch=1)
+        main_layout.addLayout(
+            body_layout,
+            stretch=1
+        )
 
         footer_layout = QHBoxLayout()
 
         footer_layout.setContentsMargins(
-            INNER_MARGIN,
+            spacing.INNER_MARGIN,
             0,
-            INNER_MARGIN,
+            spacing.INNER_MARGIN,
             0
         )
 
-        footer_layout.addWidget(self.footer)
+        footer_layout.addWidget(
+            self.footer
+        )
 
-        main_layout.addLayout(footer_layout)
+        main_layout.addLayout(
+            footer_layout
+        )
 
-        self.setLayout(main_layout)
+        self.setLayout(
+            main_layout
+        )
 
-    def set_navigation(self,items):
+    def set_navigation(
+        self,
+        items
+    ):
 
-        self.navigation.set_items(items)
+        self.navigation.set_items(
+            items
+        )

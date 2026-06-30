@@ -10,7 +10,7 @@ from widgets.main_layout import MainLayout
 from services.viewport_manager import ViewportManager
 from services.context_manager import ContextManager
 from services.kaizen import Kaizen
-
+from services.maaya import Maaya
 
 class MainMenuScreen(QWidget):
 
@@ -24,7 +24,22 @@ class MainMenuScreen(QWidget):
             Qt.FocusPolicy.StrongFocus
         )
 
-        self.ui = MainLayout()
+        self.maaya = Maaya()
+
+        self.maaya.load_theme(
+            "classic"
+        )
+
+        self.maaya.load_font(
+            "system"
+        )
+
+        self.maaya.load_wallpaper(
+            "static",
+            "Reze.txt"
+        )
+
+        self.ui = MainLayout(self.maaya)
 
         self.viewport_manager = ViewportManager(
             self.ui.viewport
@@ -55,10 +70,7 @@ class MainMenuScreen(QWidget):
             "MK II Alpha"
         )
 
-        self.viewport_manager.show_animation(
-            "stars",
-            fps=5
-        )
+        self.ui.viewport.show_wallpaper()
 
         self.ui.navigation.set_items([
             "OBSERVE",

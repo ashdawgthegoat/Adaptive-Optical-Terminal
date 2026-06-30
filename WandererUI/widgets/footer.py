@@ -1,49 +1,63 @@
 from PyQt6.QtWidgets import (
-    QFrame,
     QLabel,
     QHBoxLayout
 )
 
-from PyQt6.QtCore import Qt
-from widgets.theme import (
-    SMALL_FONT,
-    PRIMARY,
-    SECONDARY,
-    ACCENT
-)
+from PyQt6.QtGui import QFont
 
 from widgets.panel import Panel
+
 
 class Footer(Panel):
 
     def __init__(
         self,
+        maaya,
         controls="↑↓ Navigate    ENTER Select    ESC Back",
         status="Ready."
     ):
-        super().__init__()
+
+        super().__init__(maaya)
+
+        self.maaya = maaya
+
+        self.palette = self.maaya.theme.Palette
+
+        self.typography = self.maaya.typography()
 
         self.controls = QLabel(controls)
+
         self.status = QLabel(status)
 
         self.build_ui()
 
     def build_ui(self):
 
-        self.controls.setFont(SMALL_FONT)
-        self.status.setFont(SMALL_FONT)
+        font = QFont(
+            self.maaya.font["family"],
+            self.typography.FOOTER_SIZE
+        )
+
+        self.controls.setFont(font)
+
+        self.status.setFont(font)
 
         self.controls.setStyleSheet(
-            f"color: {SECONDARY};"
+            f"color: {self.palette.SECONDARY};"
         )
 
         self.status.setStyleSheet(
-            f"color: {PRIMARY};"
+            f"color: {self.palette.PRIMARY};"
         )
 
         layout = QHBoxLayout()
 
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(
+            0,
+            0,
+            0,
+            0
+        )
 
         layout.addWidget(
             self.controls
@@ -55,7 +69,9 @@ class Footer(Panel):
             self.status
         )
 
-        self.setLayout(layout)
+        self.setLayout(
+            layout
+        )
 
         self.set_inactive()
 
@@ -64,11 +80,15 @@ class Footer(Panel):
         text
     ):
 
-        self.controls.setText(text)
+        self.controls.setText(
+            text
+        )
 
     def set_status(
         self,
         text
     ):
 
-        self.status.setText(text)
+        self.status.setText(
+            text
+        )
