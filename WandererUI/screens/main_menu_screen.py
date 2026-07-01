@@ -51,6 +51,8 @@ class MainMenuScreen(QWidget):
 
         self.kaizen = Kaizen()
 
+        self.kaizen.set_mode("native")
+
         layout = QVBoxLayout()
 
         layout.addWidget(

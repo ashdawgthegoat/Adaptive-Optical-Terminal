@@ -11,11 +11,13 @@ class Kaizen(QObject):
 
         super().__init__()
 
+        self.mode = "native"
+
         self.current_region = "navigation"
 
         self.panel_locked = False
 
-        self.graph = {
+        self.native_graph = {
 
             "navigation": {
 
@@ -58,6 +60,10 @@ class Kaizen(QObject):
 
         }
 
+        #Generated graph for workbench panels, will be populated by the workbench
+
+        self.workbench_graph = {}
+
     # ==========================================
     # Startup
     # ==========================================
@@ -80,7 +86,9 @@ class Kaizen(QObject):
 
     def set_focus(self, name):
 
-        if name not in self.graph:
+        graph = self.active_graph()
+
+        if name not in graph:
 
             return
 
@@ -139,7 +147,7 @@ class Kaizen(QObject):
 
             return
 
-        neighbours = self.graph.get(
+        neighbours = self.active_graph().get(
             self.current_region,
             {}
         )
@@ -153,6 +161,30 @@ class Kaizen(QObject):
             self.focus_changed.emit(
                 self.current_region
             )
+
+    def set_mode(self, mode):
+
+        if mode not in (
+            "native",
+            "workbench"
+        ):
+            return
+
+        self.mode = mode
+
+
+    def load_workbench_graph(self, graph):
+
+        self.workbench_graph = graph
+
+
+    def active_graph(self):
+
+        if self.mode == "native":
+
+            return self.native_graph
+
+        return self.workbench_graph
 
     # ==========================================
     # Utilities
