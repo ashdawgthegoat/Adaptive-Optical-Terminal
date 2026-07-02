@@ -1,7 +1,14 @@
 from PyQt6.QtWidgets import QFrame
+
 from PyQt6.QtCore import (
     pyqtSignal,
-    Qt
+    Qt,
+)
+
+from PyQt6.QtGui import (
+    QPainter,
+    QPen,
+    QColor,
 )
 
 
@@ -11,7 +18,8 @@ class Panel(QFrame):
 
     def __init__(
         self,
-        maaya
+        maaya,
+        show_border=True
     ):
 
         super().__init__()
@@ -22,19 +30,40 @@ class Panel(QFrame):
 
         self.borders = self.maaya.theme.Borders
 
+        # Whether this panel should render a border.
+        # Some UI elements (e.g. Header child widgets)
+        # participate in the focus system but intentionally
+        # remain borderless.
+        self.show_border = show_border
+
         self.active = False
 
-        self.setObjectName("panel")
+        if self.show_border:
 
-        self.refresh_style()
+            padding = self.content_padding()
 
+        else:
+
+            padding = 0
+
+        self.setContentsMargins(
+            padding,
+            padding,
+            padding,
+            padding
+        )
+
+        self.update()
+
+    # =========================================
+    # Focus State
     # =========================================
 
     def set_active(self):
 
         self.active = True
 
-        self.refresh_style()
+        self.update()
 
     # =========================================
 
@@ -42,7 +71,7 @@ class Panel(QFrame):
 
         self.active = False
 
-        self.refresh_style()
+        self.update()
 
     # =========================================
 
@@ -51,29 +80,69 @@ class Panel(QFrame):
         return self.active
 
     # =========================================
+    # Layout Helpers
+    # =========================================
 
-    def refresh_style(self):
+    def content_padding(self):
+
+        """
+        Returns the padding required to keep child
+        widgets inside the panel border.
+        """
+
+        return max(
+            self.borders.WIDTH,
+            self.borders.ACTIVE_WIDTH
+        ) + self.borders.PADDING
+
+    # =========================================
+    # Appearance
+    # =========================================
+
+    def paintEvent(self, event):
+
+        # Let Qt paint the widget first.
+        super().paintEvent(event)
+
+        # Borderless panels participate in the focus system
+        # but intentionally render no outline.
+        if not self.show_border:
+            return
+
+        painter = QPainter(self)
 
         if self.active:
 
-            self.setStyleSheet(
-                f"""
-                QFrame#panel {{
-                    border: {self.borders.ACTIVE_WIDTH}px solid {self.palette.ACCENT};
-                }}
-                """
-            )
+            color = self.palette.ACCENT
+            width = self.borders.ACTIVE_WIDTH
 
         else:
 
-            self.setStyleSheet(
-                f"""
-                QFrame#panel {{
-                    border: {self.borders.WIDTH}px solid {self.palette.SEPARATOR};
-                }}
-                """
-            )
+            color = self.palette.SEPARATOR
+            width = self.borders.WIDTH
 
+        pen = QPen(
+            QColor(color)
+        )
+
+        pen.setWidth(width)
+
+        painter.setPen(pen)
+
+        # Draw the border just inside the widget bounds.
+        offset = width
+
+        painter.drawRect(
+            self.rect().adjusted(
+                offset,
+                offset,
+                -offset,
+                -offset
+            )
+        )
+
+    # =========================================
+    # Mouse Interaction
     # =========================================
 
     def mousePressEvent(self, event):

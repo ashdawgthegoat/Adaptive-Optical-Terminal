@@ -10,6 +10,16 @@ from PyQt6.QtGui import QFont
 
 from widgets.panel import Panel
 
+# ==========================================================
+# Viewport
+#
+# Displays the primary content of the currently active
+# application. Wallpapers, animations and future application
+# views are rendered here.
+#
+# This panel participates in the focus system and renders
+# the standard panel border.
+# ==========================================================
 
 class Viewport(Panel):
 
@@ -24,7 +34,10 @@ class Viewport(Panel):
         maaya
     ):
 
-        super().__init__(maaya)
+        super().__init__(
+            maaya, 
+            show_border=True
+        )
 
         self.maaya = maaya
 
@@ -42,9 +55,22 @@ class Viewport(Panel):
 
         self.build_ui()
 
+    # ==========================================================
+    # UI Construction
+    # ==========================================================
+
     def build_ui(self):
 
         layout = QVBoxLayout()
+
+        padding = self.content_padding()
+
+        layout.setContentsMargins(
+            padding,    
+            padding,
+            padding,
+            padding
+        )
 
         self.scroll = QScrollArea()
 
@@ -138,6 +164,10 @@ class Viewport(Panel):
 
         self.set_inactive()
 
+    # ==========================================================
+    # Display Management
+    # ==========================================================
+
     def show_ascii(
         self,
         ascii_art
@@ -161,6 +191,10 @@ class Viewport(Panel):
                     encoding="utf-8"
                 )
             )
+    
+    # ==========================================================
+    # Animation Control
+    # ==========================================================
 
     def play_animation(
         self,
@@ -182,6 +216,10 @@ class Viewport(Panel):
     def clear(self):
 
         self.display.clear()
+
+    # ==========================================================
+    # Mouse Interaction
+    # ==========================================================
 
     def mousePressEvent(
         self,

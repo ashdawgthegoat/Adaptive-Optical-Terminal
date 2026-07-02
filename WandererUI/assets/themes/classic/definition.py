@@ -35,6 +35,8 @@ class Spacing:
 
 class Borders:
 
+    PADDING = 4
+
     WIDTH = 2
 
     ACTIVE_WIDTH = 3

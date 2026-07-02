@@ -12,6 +12,22 @@ from PyQt6.QtGui import QFont
 
 from widgets.panel import Panel
 
+from widgets.system_widget import SystemWidget
+from widgets.environment_widget import EnvironmentWidget
+from widgets.runtime_widget import RuntimeWidget
+from widgets.clock_widget import ClockWidget
+
+# ==========================================================
+# Header
+#
+# Displays the global identity and controls of WandererUI.
+# The Header is composed of multiple child panels responsible
+# for system status, environment controls, runtime status
+# and the system clock.
+#
+# This panel participates in the focus system and renders
+# the standard panel border.
+# ==========================================================
 
 class Header(Panel):
 
@@ -32,7 +48,7 @@ class Header(Panel):
         subtitle="MK II Alpha"
     ):
 
-        super().__init__(maaya)
+        super().__init__(maaya, show_border=True)
 
         self.maaya = maaya
 
@@ -46,7 +62,16 @@ class Header(Panel):
 
         self.subtitle = QLabel(subtitle)
 
+        self.system_widget = SystemWidget(self.maaya)
+        self.environment_widget = EnvironmentWidget(self.maaya)
+        self.runtime_widget = RuntimeWidget(self.maaya)
+        self.clock_widget = ClockWidget(self.maaya)
+
         self.build_ui()
+
+    # ==========================================================
+    # UI Construction
+    # ==========================================================
 
     def build_ui(self):
 
@@ -90,19 +115,41 @@ class Header(Panel):
             self.subtitle
         )
 
-        title_layout.addStretch()
-
         main_layout = QHBoxLayout()
 
+        padding = self.content_padding()
+
         main_layout.setContentsMargins(
-            0,
-            0,
-            0,
-            0
+            padding,
+            padding,
+            padding,
+            padding
         )
 
         main_layout.addLayout(
             title_layout
+        )
+
+        main_layout.addStretch()
+
+        # ==========================================================
+        # Header Components     
+        # ==========================================================
+
+        main_layout.addWidget(
+            self.system_widget
+        )
+
+        main_layout.addWidget(
+            self.environment_widget
+        )
+
+        main_layout.addWidget(
+            self.runtime_widget
+        )
+
+        main_layout.addWidget(
+            self.clock_widget
         )
 
         main_layout.setAlignment(
@@ -115,6 +162,10 @@ class Header(Panel):
         )
 
         self.set_inactive()
+    
+    # ==========================================================
+    # Header State
+    # ==========================================================
 
     def set_title(
         self,
@@ -139,6 +190,10 @@ class Header(Panel):
         self.subtitle.setStyleSheet(
             f"color: {self.palette.ACCENT};"
         )
+
+    # ==========================================================
+    # Keyboard Interaction
+    # ==========================================================
 
     def keyPressEvent(
         self,
@@ -166,6 +221,10 @@ class Header(Panel):
                 super().keyPressEvent(
                     event
                 )
+    
+    # ==========================================================
+    # Mouse Interaction
+    # ==========================================================
 
     def mousePressEvent(
         self,

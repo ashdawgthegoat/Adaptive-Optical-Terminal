@@ -7,6 +7,14 @@ from PyQt6.QtGui import QFont
 
 from widgets.panel import Panel
 
+# ==========================================================
+# Footer
+#
+# Displays global controls and the current system status.
+#
+# This panel participates in the focus system and renders
+# the standard panel border.
+# ==========================================================
 
 class Footer(Panel):
 
@@ -17,7 +25,10 @@ class Footer(Panel):
         status="Ready."
     ):
 
-        super().__init__(maaya)
+        super().__init__(
+            maaya,
+            show_border=True
+        )
 
         self.maaya = maaya
 
@@ -31,16 +42,20 @@ class Footer(Panel):
 
         self.build_ui()
 
+    # ==========================================================
+    # UI Construction
+    # ==========================================================
+
     def build_ui(self):
 
-        font = QFont(
+        footer_font = QFont(
             self.maaya.font["family"],
             self.typography.FOOTER_SIZE
         )
 
-        self.controls.setFont(font)
+        self.controls.setFont(footer_font)
 
-        self.status.setFont(font)
+        self.status.setFont(footer_font)
 
         self.controls.setStyleSheet(
             f"color: {self.palette.SECONDARY};"
@@ -52,11 +67,13 @@ class Footer(Panel):
 
         layout = QHBoxLayout()
 
+        padding = self.content_padding()
+
         layout.setContentsMargins(
-            0,
-            0,
-            0,
-            0
+            padding,    
+            padding,
+            padding,
+            padding
         )
 
         layout.addWidget(
@@ -74,6 +91,10 @@ class Footer(Panel):
         )
 
         self.set_inactive()
+
+    # ==========================================================
+    # Footer Content
+    # ==========================================================
 
     def set_controls(
         self,

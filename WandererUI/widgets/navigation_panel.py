@@ -11,6 +11,13 @@ from PyQt6.QtGui import QFont
 from widgets.navigation_item import NavigationItem
 from widgets.panel import Panel
 
+# ==========================================================
+# Navigation Panel
+#
+# Displays the primary navigation options of WandererUI.
+# This panel participates in the focus system and renders
+# the standard panel border.
+# ==========================================================
 
 class NavigationPanel(Panel):
 
@@ -20,7 +27,10 @@ class NavigationPanel(Panel):
         items=None
     ):
 
-        super().__init__(maaya)
+        super().__init__(
+            maaya,
+            show_border=True
+        )
 
         self.maaya = maaya
 
@@ -38,9 +48,22 @@ class NavigationPanel(Panel):
 
         self.build_ui()
 
+    # ==========================================================
+    # UI Construction
+    # ==========================================================
+
     def build_ui(self):
 
         self.layout = QVBoxLayout()
+
+        padding = self.content_padding()
+
+        self.layout.setContentsMargins(
+            padding,    
+            padding,
+            padding,
+            padding
+        )
 
         self.scroll = QScrollArea()
 
@@ -90,8 +113,6 @@ class NavigationPanel(Panel):
             self.items
         )
 
-        self.content_layout.addStretch()
-
         self.content.setLayout(
             self.content_layout
         )
@@ -121,6 +142,10 @@ class NavigationPanel(Panel):
         )
 
         self.set_inactive()
+
+    # ==========================================================
+    # Navigation Item Management
+    # ==========================================================
 
     def set_items(
         self,
@@ -157,9 +182,11 @@ class NavigationPanel(Panel):
                 item
             )
 
-        self.content_layout.addStretch()
-
         self.update_selection()
+
+    # ==========================================================
+    # Selection Management
+    # ==========================================================
 
     def update_selection(self):
 
@@ -213,6 +240,10 @@ class NavigationPanel(Panel):
             self.current_selection = index
 
             self.update_selection()
+
+    # ==========================================================
+    # Cleanup
+    # ==========================================================
 
     def clear_items(self):
 

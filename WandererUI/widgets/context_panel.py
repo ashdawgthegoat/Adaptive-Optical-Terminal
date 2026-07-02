@@ -12,12 +12,24 @@ from PyQt6.QtGui import QFont
 from widgets.info_cell import InfoCell
 from widgets.panel import Panel
 
+# ==========================================================
+# Context Panel
+#
+# Displays contextual information related to the currently
+# active application or the overall system state.
+#
+# This panel participates in the focus system and renders
+# the standard panel border.
+# ==========================================================
 
 class ContextPanel(Panel):
 
     def __init__(self, maaya):
 
-        super().__init__(maaya)
+        super().__init__(
+            maaya,
+            show_border=True
+        )
 
         self.maaya = maaya
 
@@ -28,11 +40,22 @@ class ContextPanel(Panel):
 
         self.build_ui()
 
-    # =====================================
+    # ==========================================================
+    # UI Construction
+    # ==========================================================
 
     def build_ui(self):
 
         root_layout = QVBoxLayout()
+
+        padding = self.content_padding()
+
+        root_layout.setContentsMargins(
+            padding,    
+            padding,
+            padding,
+            padding
+        )
 
         self.scroll = QScrollArea()
 
@@ -91,24 +114,24 @@ class ContextPanel(Panel):
         # DIVIDER
         # ============================
 
-        divider = QFrame()
+        self.divider = QFrame()
 
-        divider.setFrameShape(
+        self.divider.setFrameShape(
             QFrame.Shape.HLine
         )
 
-        divider.setFixedHeight(
+        self.divider.setFixedHeight(
             self.borders.WIDTH
         )
 
-        divider.setStyleSheet(
+        self.divider.setStyleSheet(
             f"""
             background-color: {self.palette.ACCENT};
             """
         )
 
         self.main_layout.addWidget(
-            divider
+            self.divider
         )
 
         # ============================
@@ -181,7 +204,9 @@ class ContextPanel(Panel):
 
         self.set_inactive()
 
-    # =====================================
+    # ==========================================================
+    # Layout Utilities
+    # ==========================================================
 
     def _clear_layout(self, layout):
 
@@ -193,7 +218,9 @@ class ContextPanel(Panel):
 
                 item.widget().deleteLater()
 
-    # =====================================
+    # ==========================================================
+    # Context Information
+    # ==========================================================
 
     def set_info(self, info):
 
@@ -245,7 +272,9 @@ class ContextPanel(Panel):
             title
         )
 
-    # =====================================
+    # ==========================================================
+    # Reset State
+    # ==========================================================
 
     def clear_module(self):
 
