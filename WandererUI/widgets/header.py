@@ -126,35 +126,50 @@ class Header(Panel):
             padding
         )
 
+        # ==========================================================
+        # Left Section
+        # ==========================================================
+
         main_layout.addLayout(
             title_layout
         )
 
+        # Push the runtime widget towards the centre.
         main_layout.addStretch()
 
         # ==========================================================
-        # Header Components     
+        # Centre Section
         # ==========================================================
 
         main_layout.addWidget(
-            self.system_widget
+            self.runtime_widget,
+            alignment=Qt.AlignmentFlag.AlignCenter
         )
+
+        main_layout.addWidget(
+            QLabel(" | ")
+        )
+
+        main_layout.addWidget(
+            self.clock_widget,
+            alignment=Qt.AlignmentFlag.AlignCenter
+        )
+
+        # Push the remaining widgets to the right.
+        main_layout.addStretch()
+
+        # ==========================================================
+        # Right Section
+        # ==========================================================
 
         main_layout.addWidget(
             self.environment_widget
         )
 
-        main_layout.addWidget(
-            self.runtime_widget
-        )
+        main_layout.addSpacing(80)
 
         main_layout.addWidget(
-            self.clock_widget
-        )
-
-        main_layout.setAlignment(
-            title_layout,
-            Qt.AlignmentFlag.AlignVCenter
+            self.system_widget
         )
 
         self.setLayout(
