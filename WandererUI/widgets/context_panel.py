@@ -6,11 +6,13 @@ from PyQt6.QtWidgets import (
     QScrollArea
 )
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 
 from widgets.info_cell import InfoCell
 from widgets.panel import Panel
+
+from utils.system_info import SystemInfo
 
 # ==========================================================
 # Context Panel
@@ -37,6 +39,14 @@ class ContextPanel(Panel):
         self.spacing = self.maaya.theme.Spacing
         self.borders = self.maaya.theme.Borders
         self.typography = self.maaya.typography()
+
+        self.timer = QTimer(self)
+
+        self.timer.timeout.connect(
+            self.refresh_system_info
+        )
+
+        self.timer.start(1000)
 
         self.build_ui()
 
@@ -107,8 +117,9 @@ class ContextPanel(Panel):
 
         self.main_layout.addLayout(
             self.system_layout,
-            3
         )
+
+        self.main_layout.addStretch()
 
         # ============================
         # DIVIDER
@@ -163,7 +174,6 @@ class ContextPanel(Panel):
 
         self.main_layout.addLayout(
             self.module_layout,
-            1
         )
 
         self.content.setLayout(
@@ -197,6 +207,8 @@ class ContextPanel(Panel):
         self.setLayout(
             root_layout
         )
+
+        self.refresh_system_info()
 
         self.set_module_info({
             "Status": "No Active Module"
@@ -240,9 +252,25 @@ class ContextPanel(Panel):
                 cell
             )
 
-        self.system_layout.addStretch()
-
     # =====================================
+
+    def refresh_system_info(self):
+
+        self.set_info({
+
+            "CPU": SystemInfo.cpu(),
+
+            "Memory": SystemInfo.memory(),
+
+            "Storage": SystemInfo.storage(),
+
+            "Battery": SystemInfo.battery(),
+
+            "Hostname": SystemInfo.hostname(),
+
+            "Status": SystemInfo.status(),
+
+        })
 
     def set_module_info(self, info):
 

@@ -152,3 +152,26 @@ class Panel(QFrame):
             self.clicked.emit()
 
         super().mousePressEvent(event)
+
+    # =========================================
+    # Navigation API
+    # =========================================
+
+    def move_up(self):
+        pass
+
+
+    def move_down(self):
+        pass
+
+
+    def move_left(self):
+        pass
+
+
+    def move_right(self):
+        pass
+
+
+    def activate(self):
+        pass

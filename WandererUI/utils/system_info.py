@@ -10,7 +10,7 @@ class SystemInfo:
     @staticmethod
     def cpu():
 
-        return f"{psutil.cpu_percent(interval=0)} %"
+        return f"{psutil.cpu_percent(interval=None)} %"
 
     @staticmethod
     def memory():

@@ -11,7 +11,7 @@ from services.maaya import Maaya
 from services.kaizen import Kaizen
 from services.animus import Animus
 
-from widgets.main_layout import Desktop
+from widgets.desktop import Desktop
 
 
 class MainWindow(QMainWindow):
@@ -68,7 +68,8 @@ class MainWindow(QMainWindow):
             self.desktop
         )
 
-        self.kaizen.initialize()
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setFocus()
 
         # ==================================================
         # Discover Applications
@@ -80,25 +81,72 @@ class MainWindow(QMainWindow):
 
         key = event.key()
 
-        if key == Qt.Key.Key_Left:
+        if key == Qt.Key.Key_Control:
 
-            self.kaizen.move_left()
+            locked = self.kaizen.toggle_lock()
 
-        elif key == Qt.Key.Key_Right:
+            if locked:
 
-            self.kaizen.move_right()
+                self.desktop.footer.set_status(
+                    f"{self.kaizen.current().upper()} Captured"
+                )
 
-        elif key == Qt.Key.Key_Up:
+            else:
 
-            self.kaizen.move_up()
+                self.desktop.footer.set_status(
+                    "Panel Navigation"
+                )
 
-        elif key == Qt.Key.Key_Down:
+            return
 
-            self.kaizen.move_down()
+        if self.kaizen.is_locked():
+
+            panel = self.desktop.current_panel()
+
+            if key == Qt.Key.Key_Left:
+
+                panel.move_left()
+
+            elif key == Qt.Key.Key_Right:
+
+                panel.move_right()
+
+            elif key == Qt.Key.Key_Up:
+
+                panel.move_up()
+
+            elif key == Qt.Key.Key_Down:
+
+                panel.move_down()
+
+            elif key in (
+                Qt.Key.Key_Return,
+                Qt.Key.Key_Enter
+            ):
+
+                panel.activate()
 
         else:
 
-            super().keyPressEvent(event)
+            if key == Qt.Key.Key_Left:
+
+                self.kaizen.move_left()
+
+            elif key == Qt.Key.Key_Right:
+
+                self.kaizen.move_right()
+
+            elif key == Qt.Key.Key_Up:
+
+                self.kaizen.move_up()
+
+            elif key == Qt.Key.Key_Down:
+
+                self.kaizen.move_down()
+
+            else:
+
+                super().keyPressEvent(event)
 
 
 def main():

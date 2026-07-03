@@ -26,6 +26,8 @@ class Desktop(QWidget):
 
         self.animus = animus
 
+        self.kaizen = kaizen
+
         self.header = Header(
             self.maaya
         )
@@ -48,6 +50,12 @@ class Desktop(QWidget):
         )
 
         self.build_ui()
+
+        self.viewport.show_wallpaper()
+
+        self.kaizen.focus_changed.connect(
+            self.update_focus
+        )
 
     def build_ui(self):
 
@@ -143,3 +151,42 @@ class Desktop(QWidget):
         self.navigation.set_items(
             items
         )
+
+    def current_panel(self):
+
+        panels = {
+
+            "header": self.header,
+            "navigation": self.navigation,
+            "viewport": self.viewport,
+            "context": self.context,
+            "footer": self.footer,
+
+        }
+
+        return panels[self.kaizen.current()]
+
+    def update_focus(self, region):
+
+        self.header.set_inactive()
+        self.navigation.set_inactive()
+        self.viewport.set_inactive()
+        self.context.set_inactive()
+        self.footer.set_inactive()
+
+        match region:
+
+            case "header":
+                self.header.set_active()
+
+            case "navigation":
+                self.navigation.set_active()
+
+            case "viewport":
+                self.viewport.set_active()
+
+            case "context":
+                self.context.set_active()
+
+            case "footer":
+                self.footer.set_active()
