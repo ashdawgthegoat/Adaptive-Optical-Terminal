@@ -11,23 +11,28 @@ from widgets.viewport import Viewport
 from widgets.context_panel import ContextPanel
 
 
-class MainLayout(QWidget):
+class Desktop(QWidget):
 
     def __init__(
         self,
-        maaya
+        maaya,
+        animus,
+        kaizen
     ):
 
         super().__init__()
 
         self.maaya = maaya
 
+        self.animus = animus
+
         self.header = Header(
             self.maaya
         )
 
         self.navigation = NavigationPanel(
-            self.maaya
+            self.maaya,
+            self.animus
         )
 
         self.viewport = Viewport(
@@ -48,16 +53,16 @@ class MainLayout(QWidget):
 
         spacing = self.maaya.theme.Spacing
 
-        main_layout = QVBoxLayout()
+        desktop_layout = QVBoxLayout()
 
-        main_layout.setContentsMargins(
+        desktop_layout.setContentsMargins(
             spacing.OUTER_MARGIN,
             spacing.OUTER_MARGIN,
             spacing.OUTER_MARGIN,
             spacing.OUTER_MARGIN
         )
 
-        main_layout.setSpacing(
+        desktop_layout.setSpacing(
             spacing.SECTION_SPACING
         )
 
@@ -85,7 +90,7 @@ class MainLayout(QWidget):
             self.header
         )
 
-        main_layout.addLayout(
+        desktop_layout.addLayout(
             header_layout
         )
 
@@ -104,7 +109,7 @@ class MainLayout(QWidget):
             2
         )
 
-        main_layout.addLayout(
+        desktop_layout.addLayout(
             body_layout,
             stretch=1
         )
@@ -122,12 +127,12 @@ class MainLayout(QWidget):
             self.footer
         )
 
-        main_layout.addLayout(
+        desktop_layout.addLayout(
             footer_layout
         )
 
         self.setLayout(
-            main_layout
+            desktop_layout
         )
 
     def set_navigation(

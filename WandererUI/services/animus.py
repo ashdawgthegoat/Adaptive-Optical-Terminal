@@ -1,7 +1,17 @@
+from pathlib import Path
+
+from PyQt6.QtCore import (
+    QObject,
+    pyqtSignal
+)
+
+from utils.desktop_parser import DesktopParser
+
 class Animus(QObject):
 
     app_launched = pyqtSignal(str)
     app_closed = pyqtSignal(str)
+    applications_changed = pyqtSignal()
 
     workbench_created = pyqtSignal()
     workbench_closed = pyqtSignal()
@@ -18,21 +28,38 @@ class Animus(QObject):
 
         self.running_apps = {}
 
+        self.active_application = None
+
         self.modules = {}
 
         self.workbenches = {}
 
         self.active_workbench = None
 
-    def register_application(self, app):
-
-        if app["id"] in self.applications:
-            return 
-
-        self.applications[app["id"]] = app
-
     def discover_applications(self):
-        pass
+
+        self.applications.clear()
+
+        paths = [
+            Path("/usr/share/applications"),
+            Path.home() / ".local/share/applications"
+        ]
+
+        for directory in paths:
+
+            if not directory.exists():
+                continue
+
+            for file in directory.glob("*.desktop"):
+
+                app = DesktopParser.parse(file)
+
+                if app is None:
+                    continue
+
+                self.applications[app["id"]] = app
+
+        self.applications_changed.emit()
 
     def launch(self, app):
 
@@ -42,7 +69,14 @@ class Animus(QObject):
         if app in self.running_apps:
             return
 
-        self.running_apps[app] = self.applications[app]
+        application = self.get_application(app)
+
+        if application is None:
+            return
+
+        self.running_apps[app] = application
+
+        self.active_application = app
 
         self.app_launched.emit(app)
 
@@ -52,6 +86,9 @@ class Animus(QObject):
             return
 
         del self.running_apps[app]
+
+        if self.active_application == app:
+            self.active_application = None
 
         self.app_closed.emit(app)    
 
@@ -103,6 +140,10 @@ class Animus(QObject):
     def list_applications(self):
 
         return list(self.applications.values())
+
+    def get_application(self, app_id):
+
+        return self.applications.get(app_id)
 
     def list_modules(self):
         

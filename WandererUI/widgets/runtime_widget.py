@@ -81,6 +81,19 @@ class RuntimeWidget(Panel):
 
         self.set_inactive()
 
+    def update_runtime(
+        self,
+        location: str,
+        running_apps: int
+    ):
+        """
+        Update the runtime information displayed in the header.
+        """
+
+        self.runtime.setText(
+            f"{location} • {running_apps}"
+        )
+
     def keyPressEvent(
         self,
         event

@@ -19,7 +19,7 @@ class NavigationItem(QFrame):
     def __init__(
         self,
         maaya,
-        text
+        application,
     ):
 
         super().__init__()
@@ -30,7 +30,7 @@ class NavigationItem(QFrame):
 
         self.typography = self.maaya.typography()
 
-        self.text = text
+        self.application = application
 
         self.selected = False
 
@@ -64,7 +64,7 @@ class NavigationItem(QFrame):
         )
 
         self.label = QLabel(
-            self.text
+            self.application["name"]
         )
 
         self.label.setAttribute(
@@ -112,7 +112,7 @@ class NavigationItem(QFrame):
         if self.selected:
 
             self.label.setText(
-                f">  {self.text}"
+                f">  {self.application['name']}"
             )
 
             self.setStyleSheet(
@@ -131,7 +131,7 @@ class NavigationItem(QFrame):
         else:
 
             self.label.setText(
-                f"   {self.text}"
+                f"   {self.application['name']}"
             )
 
             self.setStyleSheet(
@@ -146,6 +146,10 @@ class NavigationItem(QFrame):
                 }}
                 """
             )
+
+    def application_id(self):
+
+        return self.application["id"]
 
     def mousePressEvent(
         self,

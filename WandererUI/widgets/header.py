@@ -146,9 +146,7 @@ class Header(Panel):
             alignment=Qt.AlignmentFlag.AlignCenter
         )
 
-        main_layout.addWidget(
-            QLabel(" | ")
-        )
+        main_layout.addSpacing(20)
 
         main_layout.addWidget(
             self.clock_widget,

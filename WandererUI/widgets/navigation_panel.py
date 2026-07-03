@@ -24,7 +24,7 @@ class NavigationPanel(Panel):
     def __init__(
         self,
         maaya,
-        items=None
+        animus
     ):
 
         super().__init__(
@@ -33,6 +33,7 @@ class NavigationPanel(Panel):
         )
 
         self.maaya = maaya
+        self.animus = animus
 
         self.palette = self.maaya.theme.Palette
         self.spacing = self.maaya.theme.Spacing
@@ -40,11 +41,17 @@ class NavigationPanel(Panel):
 
         self.title = QLabel("MAIN MENU")
 
-        self.items = items or []
+        self.items = []
 
         self.current_selection = 0
 
         self.nav_items = []
+
+        self.animus.applications_changed.connect(
+            self.refresh
+        )
+        
+        self.refresh()
 
         self.build_ui()
 
@@ -109,9 +116,7 @@ class NavigationPanel(Panel):
             8
         )
 
-        self.set_items(
-            self.items
-        )
+        self.refresh()
 
         self.content.setLayout(
             self.content_layout
@@ -143,6 +148,12 @@ class NavigationPanel(Panel):
 
         self.set_inactive()
 
+    def refresh(self):
+
+        self.set_items(
+            self.animus.list_applications()
+        )
+
     # ==========================================================
     # Navigation Item Management
     # ==========================================================
@@ -162,11 +173,11 @@ class NavigationPanel(Panel):
 
         self.nav_items.clear()
 
-        for text in self.items:
+        for application in self.items:
 
             item = NavigationItem(
                 self.maaya,
-                text
+                application
             )
 
             item.clicked.connect(
@@ -195,6 +206,10 @@ class NavigationPanel(Panel):
             item.set_selected(
                 i == self.current_selection
             )
+
+    def current_application(self):
+
+        return self.current_item()
 
     def move_up(self):
 

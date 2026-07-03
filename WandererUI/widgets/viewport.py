@@ -165,6 +165,13 @@ class Viewport(Panel):
         self.set_inactive()
 
     # ==========================================================
+    # Public Interface
+    #
+    # These methods are used by native applications to control
+    # what is rendered inside the Viewport.
+    # ==========================================================
+
+    # ==========================================================
     # Display Management
     # ==========================================================
 
