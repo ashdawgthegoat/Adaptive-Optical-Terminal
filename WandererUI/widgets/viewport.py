@@ -8,6 +8,11 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
 
+from PyQt6.QtGui import (
+    QFont,
+    QPixmap,
+)
+
 from widgets.panel import Panel
 
 # ==========================================================
@@ -41,13 +46,25 @@ class Viewport(Panel):
 
         self.maaya = maaya
 
+        self.wallpaper_types = [
+            "static"
+        ]
+
+        self.wallpaper_type_index = 0
+
+        self.wallpaper_index = {
+            "static": 0,
+        }
+
         self.palette = self.maaya.theme.Palette
 
         self.typography = self.maaya.typography()
 
         self.title = QLabel("VIEWPORT")
 
-        self.display = QLabel()
+        self.ascii_display = QLabel()
+
+        self.image_display = QLabel()
 
         self.maaya.frame_changed.connect(
             self.show_ascii
@@ -108,27 +125,62 @@ class Viewport(Panel):
 
         self.content_layout.addStretch()
 
-        self.display.setFont(
+        # ==================================================
+        # ASCII
+        # ==================================================
+
+        self.ascii_display.setFont(
             QFont(
                 self.maaya.font["family"],
                 self.typography.BODY_SIZE
             )
         )
 
-        self.display.setAlignment(
+        self.ascii_display.setAlignment(
             Qt.AlignmentFlag.AlignCenter
         )
 
-        self.display.setStyleSheet(
+        self.ascii_display.setStyleSheet(
             f"color: {self.palette.PRIMARY};"
         )
 
+        # ==================================================
+        # IMAGE
+        # ==================================================
+
+        self.image_display.setAlignment(
+            Qt.AlignmentFlag.AlignCenter
+    )
+
+        self.image_display.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        # ==================================================
+        # Add renderers
+        # ==================================================
+
         self.content_layout.addWidget(
-            self.display,
+            self.ascii_display,
+            alignment=self.maaya.wallpaper_alignment
+        )
+
+        self.content_layout.addWidget(
+            self.image_display,
             alignment=self.maaya.wallpaper_alignment
         )
 
         self.content_layout.addStretch()
+
+        # ==========================================================
+        # Hide all displays initially
+        # =========================================================
+
+        self.ascii_display.hide()
+
+        self.image_display.hide()
+
+        # ==========================================================
 
         self.content.setLayout(
             self.content_layout
@@ -180,7 +232,7 @@ class Viewport(Panel):
         ascii_art
     ):
 
-        self.display.setText(
+        self.ascii_display.setText(
             ascii_art
         )
 
@@ -191,14 +243,100 @@ class Viewport(Panel):
         if wallpaper is None:
             return
 
-        if wallpaper["type"] == "ascii":
+        self.hide_all_displays()
 
-            self.show_ascii(
-                wallpaper["path"].read_text(
-                    encoding="utf-8"
+        match wallpaper["type"]:
+
+            case "ascii":
+
+                self.ascii_display.setText(
+                    wallpaper["path"].read_text(
+                        encoding="utf-8"
+                    )
                 )
-            )
+
+                self.ascii_display.show()
+
+            case "image":
+
+                pixmap = QPixmap(
+                    str(wallpaper["path"])
+                )
+
+                self.image_display.setPixmap(
+                    pixmap
+                )
+
+                self.image_display.show()
+
+    def next_wallpaper(self):
+
+        self._change_wallpaper(1)
+
+    def previous_wallpaper(self):
+
+        self._change_wallpaper(-1)
+
+    def next_type(self):
+
+        self._change_type(1)
+
+    def previous_type(self):
+
+        self._change_type(-1)
     
+    def _change_wallpaper(self, step):
+
+        category = self.wallpaper_types[
+            self.wallpaper_type_index
+        ]
+
+        wallpapers = self.maaya.available_wallpapers(category)
+
+        if not wallpapers:
+            return
+
+        index = (
+            self.wallpaper_index[category]
+            + step
+        ) % len(wallpapers)
+
+        self.wallpaper_index[category] = index
+
+        self.maaya.load_wallpaper(
+            category,
+            wallpapers[index]
+        )
+
+        self.show_wallpaper()
+
+
+    def _change_type(self, step):
+
+        self.wallpaper_type_index = (
+            self.wallpaper_type_index
+            + step
+        ) % len(self.wallpaper_types)
+
+        category = self.wallpaper_types[
+            self.wallpaper_type_index
+        ]
+
+        wallpapers = self.maaya.available_wallpapers(category)
+
+        if not wallpapers:
+            self.clear()
+            return
+
+        index = self.wallpaper_index[category]
+
+        self.maaya.load_wallpaper(
+            category,
+            wallpapers[index]
+        )
+
+        self.show_wallpaper()
+
     # ==========================================================
     # Animation Control
     # ==========================================================
@@ -222,7 +360,11 @@ class Viewport(Panel):
 
     def clear(self):
 
-        self.display.clear()
+        self.hide_all_displays()
+
+        self.ascii_display.clear()
+
+        self.image_display.clear()
 
     # ==========================================================
     # Mouse Interaction
@@ -261,3 +403,28 @@ class Viewport(Panel):
         super().mouseDoubleClickEvent(
             event
         )
+
+    def move_left(self):
+
+        self.previous_wallpaper()
+
+
+    def move_right(self):
+
+        self.next_wallpaper()
+
+
+    def move_up(self):
+
+        self.previous_type()
+
+
+    def move_down(self):
+
+        self.next_type()
+
+    def hide_all_displays(self):
+
+        self.ascii_display.hide()
+
+        self.image_display.hide()

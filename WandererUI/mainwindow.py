@@ -45,10 +45,16 @@ class MainWindow(QMainWindow):
 
         self.maaya.load_theme("classic")
         self.maaya.load_font("system")
-        self.maaya.load_wallpaper(
-            "static",
-            "Reze.txt"     # or whatever your default wallpaper is
+        wallpapers = self.maaya.available_wallpapers(
+            "static"
         )
+
+        if wallpapers:
+
+            self.maaya.load_wallpaper(
+                "static",
+                wallpapers[0]
+            )
 
         self.animus = Animus(
             development_mode=True
