@@ -20,9 +20,11 @@ class Animus(QObject):
     module_connected = pyqtSignal(str)
     module_disconnected = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, development_mode=False):
 
         super().__init__()
+
+        self.development_mode = development_mode
 
         self.applications = {}
 
@@ -40,18 +42,30 @@ class Animus(QObject):
 
         self.applications.clear()
 
-        paths = [
-            Path("/usr/share/applications"),
-            Path.home() / ".local/share/applications"
-        ]
+        if self.development_mode:
+
+            paths = [
+                Path("apps")
+            ]
+
+        else:
+
+            paths = [
+                Path("/usr/share/applications"),
+                Path.home() / ".local/share/applications"
+            ]
 
         for directory in paths:
 
             if not directory.exists():
                 continue
 
-            for file in directory.glob("*.desktop"):
+            files = (
+                directory.rglob("*.desktop") if self.development_mode else directory.glob("*.desktop")
+            )
 
+            for file in files:
+                
                 app = DesktopParser.parse(file)
 
                 if app is None:

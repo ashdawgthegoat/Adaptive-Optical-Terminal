@@ -50,7 +50,9 @@ class MainWindow(QMainWindow):
             "Reze.txt"     # or whatever your default wallpaper is
         )
 
-        self.animus = Animus()
+        self.animus = Animus(
+            development_mode=True
+        )
 
         self.kaizen = Kaizen()
 
