@@ -8,10 +8,10 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
 
-from PyQt6.QtGui import (
-    QFont,
-    QPixmap,
-)
+from PyQt6.QtGui import QFont
+
+from widgets.renderers.ascii_renderer import AsciiRenderer
+from widgets.renderers.image_renderer import ImageRenderer
 
 from widgets.panel import Panel
 
@@ -62,13 +62,17 @@ class Viewport(Panel):
 
         self.title = QLabel("VIEWPORT")
 
-        self.ascii_display = QLabel()
-
-        self.image_display = QLabel()
-
-        self.maaya.frame_changed.connect(
-            self.show_ascii
+        self.ascii_renderer = AsciiRenderer(
+            self.maaya
         )
+
+        self.image_renderer = ImageRenderer(
+            self.maaya
+        )
+
+        #self.maaya.frame_changed.connect(
+        #    self.ascii_renderer.show_content
+        #)
 
         self.build_ui()
 
@@ -91,7 +95,19 @@ class Viewport(Panel):
 
         self.scroll = QScrollArea()
 
+        self.scroll.viewport().setFocusPolicy(
+            Qt.FocusPolicy.NoFocus
+        )
+
         self.content = QWidget()
+
+        self.scroll.setFocusPolicy(
+            Qt.FocusPolicy.NoFocus
+        )
+
+        self.content.setFocusPolicy(
+            Qt.FocusPolicy.NoFocus
+        )
 
         self.content_layout = QVBoxLayout()
 
@@ -125,60 +141,17 @@ class Viewport(Panel):
 
         self.content_layout.addStretch()
 
-        # ==================================================
-        # ASCII
-        # ==================================================
-
-        self.ascii_display.setFont(
-            QFont(
-                self.maaya.font["family"],
-                self.typography.BODY_SIZE
-            )
-        )
-
-        self.ascii_display.setAlignment(
-            Qt.AlignmentFlag.AlignCenter
-        )
-
-        self.ascii_display.setStyleSheet(
-            f"color: {self.palette.PRIMARY};"
-        )
-
-        # ==================================================
-        # IMAGE
-        # ==================================================
-
-        self.image_display.setAlignment(
-            Qt.AlignmentFlag.AlignCenter
-    )
-
-        self.image_display.setStyleSheet(
-            f"color: {self.palette.PRIMARY};"
-        )
-
-        # ==================================================
-        # Add renderers
-        # ==================================================
-
         self.content_layout.addWidget(
-            self.ascii_display,
+            self.ascii_renderer.label,
             alignment=self.maaya.wallpaper_alignment
         )
 
         self.content_layout.addWidget(
-            self.image_display,
+            self.image_renderer.label,
             alignment=self.maaya.wallpaper_alignment
         )
 
         self.content_layout.addStretch()
-
-        # ==========================================================
-        # Hide all displays initially
-        # =========================================================
-
-        self.ascii_display.hide()
-
-        self.image_display.hide()
 
         # ==========================================================
 
@@ -227,15 +200,6 @@ class Viewport(Panel):
     # Display Management
     # ==========================================================
 
-    def show_ascii(
-        self,
-        ascii_art
-    ):
-
-        self.ascii_display.setText(
-            ascii_art
-        )
-
     def show_wallpaper(self):
 
         wallpaper = self.maaya.wallpaper
@@ -249,25 +213,15 @@ class Viewport(Panel):
 
             case "ascii":
 
-                self.ascii_display.setText(
-                    wallpaper["path"].read_text(
-                        encoding="utf-8"
-                    )
+                self.ascii_renderer.show_content(
+                    wallpaper["path"]
                 )
-
-                self.ascii_display.show()
 
             case "image":
 
-                pixmap = QPixmap(
-                    str(wallpaper["path"])
+                self.image_renderer.show_content(
+                    wallpaper["path"]
                 )
-
-                self.image_display.setPixmap(
-                    pixmap
-                )
-
-                self.image_display.show()
 
     def next_wallpaper(self):
 
@@ -360,11 +314,9 @@ class Viewport(Panel):
 
     def clear(self):
 
-        self.hide_all_displays()
+        self.ascii_renderer.clear()
 
-        self.ascii_display.clear()
-
-        self.image_display.clear()
+        self.image_renderer.clear()
 
     # ==========================================================
     # Mouse Interaction
@@ -425,6 +377,6 @@ class Viewport(Panel):
 
     def hide_all_displays(self):
 
-        self.ascii_display.hide()
+        self.ascii_renderer.clear()
 
-        self.image_display.hide()
+        self.image_renderer.clear()
