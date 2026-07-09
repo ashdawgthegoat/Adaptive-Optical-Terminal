@@ -20,7 +20,7 @@ class InfoCell(QWidget):
         self,
         maaya,
         title,
-        value="",
+        data=None,
         icon=None
     ):
 
@@ -34,13 +34,18 @@ class InfoCell(QWidget):
 
         self.title_text = title
 
-        self.value_text = str(value)
+        self.data = data or {
+            "value": None,
+            "text": ""
+        }
 
         self.title = QLabel(title)
 
         self.icon = QLabel()
 
-        self.value = QLabel(str(value))
+        self.value = QLabel(
+            self.render_text()
+        )
 
         self.build_ui()
 
@@ -58,10 +63,10 @@ class InfoCell(QWidget):
             0,
             0,
             0,
-            0
+            20
         )
 
-        layout.setSpacing(2)
+        layout.setSpacing(0)
 
         font = QFont(
             self.maaya.font["family"],
@@ -99,7 +104,10 @@ class InfoCell(QWidget):
         )
 
         layout.addWidget(self.title)
-        layout.addWidget(self.icon)
+
+        if self.icon.text():
+            layout.addWidget(self.icon)
+
         layout.addWidget(self.value)
 
         for widget in (
@@ -127,16 +135,44 @@ class InfoCell(QWidget):
 
     # =========================================
 
-    def set_value(
+    def set_data(
         self,
-        value
+        data
     ):
 
-        self.value_text = str(value)
+        self.data = data
 
         self.value.setText(
-            str(value)
+            self.render_text()
         )
+
+    # =========================================
+
+    def render_text(self):
+
+        style = self.maaya.theme.Information.STYLE
+
+        text = self.data["text"]
+
+        value = self.data["value"]
+
+        if style == "text" or value is None:
+            return text
+
+        length = self.maaya.theme.Information.BAR_LENGTH
+
+        filled = self.maaya.theme.Information.FILLED
+
+        empty = self.maaya.theme.Information.EMPTY
+
+        blocks = round((value / 100) * length)
+
+        bar = (
+            filled * blocks
+            + empty * (length - blocks)
+        )
+
+        return f"{bar} {text}"
 
     # =========================================
 
@@ -166,7 +202,7 @@ class InfoCell(QWidget):
 
             self.activated.emit(
                 self.title_text,
-                self.value_text
+                self.data["text"]
             )
 
         super().mousePressEvent(

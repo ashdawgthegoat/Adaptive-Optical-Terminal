@@ -113,7 +113,7 @@ class ContextPanel(Panel):
 
         self.system_layout = QVBoxLayout()
 
-        self.system_layout.setSpacing(4)
+        self.system_layout.setSpacing(0)
 
         self.main_layout.addLayout(
             self.system_layout,
@@ -211,7 +211,10 @@ class ContextPanel(Panel):
         self.refresh_system_info()
 
         self.set_module_info({
-            "Status": "No Active Module"
+            "Status": {
+                "value": None,
+                "text": "No Active Module"
+            }
         })
 
         self.set_inactive()
@@ -245,7 +248,7 @@ class ContextPanel(Panel):
             cell = InfoCell(
                 self.maaya,
                 title=key,
-                value=value
+                data=value
             )
 
             self.system_layout.addWidget(
@@ -283,7 +286,7 @@ class ContextPanel(Panel):
             cell = InfoCell(
                 self.maaya,
                 title=key,
-                value=value
+                data=value
             )
 
             self.module_layout.addWidget(
@@ -307,7 +310,8 @@ class ContextPanel(Panel):
     def clear_module(self):
 
         self.set_module_info({
-
-            "Status": "No Active Module"
-
+            "Status": {
+                "value": None,
+                "text": "No Active Module"
+            }
         })

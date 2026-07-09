@@ -50,6 +50,15 @@ class Motion:
 
     DURATION = 150
 
+class Information:
+
+    STYLE = "bar"
+
+    BAR_LENGTH = 10
+
+    FILLED = "█"
+
+    EMPTY = "░"
 
 class Theme:
 

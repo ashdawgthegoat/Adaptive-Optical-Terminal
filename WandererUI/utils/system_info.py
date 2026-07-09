@@ -8,9 +8,22 @@ import psutil
 class SystemInfo:
 
     @staticmethod
+    def metric(value=None, text=""):
+
+        return {
+            "value": value,
+            "text": text,
+        }
+
+    @staticmethod
     def cpu():
 
-        return f"{psutil.cpu_percent(interval=None)} %"
+        value = psutil.cpu_percent(interval=None)
+
+        return SystemInfo.metric(
+            value=value,
+            text=f"{value:.0f}%"
+        )
 
     @staticmethod
     def memory():
@@ -21,16 +34,24 @@ class SystemInfo:
 
         total = memory.total / (1024 ** 3)
 
-        return f"{used:.1f} / {total:.1f} GB"
+        return SystemInfo.metric(
+            value=memory.percent,
+            text=f"{used:.1f} / {total:.1f} GB"
+        )
 
     @staticmethod
     def storage():
 
         disk = shutil.disk_usage("/")
 
-        free = disk.free / (1024 ** 3)
+        used_percent = (
+            (disk.used / disk.total) * 100
+        )
 
-        return f"{free:.0f} GB Free"
+        return SystemInfo.metric(
+            value=used_percent,
+            text=f"{used_percent:.0f} GB Free"
+        )
 
     @staticmethod
     def battery():
@@ -39,14 +60,21 @@ class SystemInfo:
 
         if battery is None:
 
-            return "N/A"
+            return SystemInfo.metric(
+                text="N/A"
+            )
 
-        return f"{battery.percent:.0f}%"
+        return SystemInfo.metric(
+            value=battery.percent,
+            text=f"{battery.percent:.0f}%"
+        )
 
     @staticmethod
     def hostname():
 
-        return platform.node()
+        return SystemInfo.metric(
+            text=platform.node()
+        )
 
     @staticmethod
     def time():
@@ -58,4 +86,6 @@ class SystemInfo:
     @staticmethod
     def status():
 
-        return "Ready"
+        return SystemInfo.metric(
+            text="Ready"
+        )

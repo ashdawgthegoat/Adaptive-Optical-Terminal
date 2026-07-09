@@ -8,8 +8,6 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
 
-from PyQt6.QtGui import QFont
-
 from widgets.renderers.ascii_renderer import AsciiRenderer
 from widgets.renderers.image_renderer import ImageRenderer
 
@@ -223,29 +221,24 @@ class Viewport(Panel):
                     wallpaper["path"]
                 )
 
-    def next_wallpaper(self):
+    def current_category(self):
 
-        self._change_wallpaper(1)
-
-    def previous_wallpaper(self):
-
-        self._change_wallpaper(-1)
-
-    def next_type(self):
-
-        self._change_type(1)
-
-    def previous_type(self):
-
-        self._change_type(-1)
-    
-    def _change_wallpaper(self, step):
-
-        category = self.wallpaper_types[
+        return self.wallpaper_types[
             self.wallpaper_type_index
         ]
 
-        wallpapers = self.maaya.available_wallpapers(category)
+
+    def current_wallpapers(self):
+
+        return self.maaya.available_wallpapers(
+            self.current_category()
+        )
+    
+    def _change_wallpaper(self, step):
+
+        category = self.current_category()
+
+        wallpapers = self.current_wallpapers()
 
         if not wallpapers:
             return
@@ -276,7 +269,7 @@ class Viewport(Panel):
             self.wallpaper_type_index
         ]
 
-        wallpapers = self.maaya.available_wallpapers(category)
+        wallpapers = self.current_wallpapers()
 
         if not wallpapers:
             self.clear()
@@ -358,22 +351,30 @@ class Viewport(Panel):
 
     def move_left(self):
 
-        self.previous_wallpaper()
+        self._change_wallpaper(
+            -1
+        )
 
 
     def move_right(self):
 
-        self.next_wallpaper()
+        self._change_wallpaper(
+            1
+        )
 
 
     def move_up(self):
 
-        self.previous_type()
+        self._change_type(
+            -1
+        )
 
 
     def move_down(self):
 
-        self.next_type()
+        self._change_type(
+            1
+        )
 
     def hide_all_displays(self):
 
