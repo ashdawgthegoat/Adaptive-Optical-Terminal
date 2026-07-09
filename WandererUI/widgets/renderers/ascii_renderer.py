@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QLabel, QVBoxLayout
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
@@ -17,6 +17,8 @@ class AsciiRenderer(BaseRenderer):
         self.typography = maaya.typography()
 
         self.label = QLabel()
+
+        self.content = ""
 
         self.label.setFont(
             QFont(
@@ -46,26 +48,32 @@ class AsciiRenderer(BaseRenderer):
             True
         )
 
+        layout = QVBoxLayout(self)
+
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        layout.addWidget(self.label)
+
         self.label.hide()
 
     def show_content(self, path):
 
-        ascii_art = path.read_text(
+        self.content = path.read_text(
             encoding="utf-8"
         )
 
-        self.label.setText(
-            ascii_art
-        )
+        self.update_display()
 
         self.label.show()
 
     def show_file(self, path):
 
-        self.show_content(
-            path.read_text(
-                encoding="utf-8"
-            )
+        self.show_content(path)
+
+    def update_display(self):
+
+        self.label.setText(
+            self.content
         )
 
     def clear(self):

@@ -76,6 +76,8 @@ class MainWindow(QMainWindow):
             self.desktop
         )
 
+        self.kaizen.initialize()
+
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setFocus()
 

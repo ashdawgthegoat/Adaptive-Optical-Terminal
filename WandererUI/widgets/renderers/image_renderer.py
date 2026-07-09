@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QLabel, QVBoxLayout
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 
@@ -15,6 +15,8 @@ class ImageRenderer(BaseRenderer):
         self.palette = maaya.theme.Palette
 
         self.label = QLabel()
+
+        self.pixmap = None
 
         self.label.setAlignment(
             Qt.AlignmentFlag.AlignCenter
@@ -37,13 +39,19 @@ class ImageRenderer(BaseRenderer):
             True
         )
 
+        layout = QVBoxLayout(self)
+
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        layout.addWidget(self.label)
+
         self.label.hide()
 
     def show_content(self, path):
 
-        pixmap = QPixmap(str(path))
+        self.pixmap = QPixmap(str(path))
 
-        if pixmap.isNull():
+        if self.pixmap.isNull():
 
             self.label.setText(
                 "Failed to load image."
@@ -53,9 +61,45 @@ class ImageRenderer(BaseRenderer):
 
             return
 
-        self.label.setPixmap(pixmap)
+        self.update_display()
 
         self.label.show()
+
+    def resizeEvent(self, event):
+
+        super().resizeEvent(event)
+
+        self.update_display()
+
+    def update_display(self):
+
+        if self.pixmap is None:
+            return
+
+        scaled = self.pixmap.scaled(
+
+            self.size(),
+
+            Qt.AspectRatioMode.KeepAspectRatio,
+
+            Qt.TransformationMode.SmoothTransformation
+
+        )
+
+        self.label.setPixmap(scaled)
+
+    def update_display(self):
+
+        if self.pixmap is None:
+            return
+
+        scaled = self.pixmap.scaled(
+            self.label.size(),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
+
+        self.label.setPixmap(scaled)
 
     def clear(self):
 

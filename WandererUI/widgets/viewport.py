@@ -140,12 +140,12 @@ class Viewport(Panel):
         self.content_layout.addStretch()
 
         self.content_layout.addWidget(
-            self.ascii_renderer.label,
+            self.ascii_renderer,
             alignment=self.maaya.wallpaper_alignment
         )
 
         self.content_layout.addWidget(
-            self.image_renderer.label,
+            self.image_renderer,
             alignment=self.maaya.wallpaper_alignment
         )
 
