@@ -10,12 +10,12 @@ from PyQt6.QtCore import (
 
 from PyQt6.QtGui import QFont
 
-from widgets.panel import Panel
+from widgets.layer.panel import Panel
 
-from widgets.system_widget import SystemWidget
-from widgets.environment_widget import EnvironmentWidget
-from widgets.runtime_widget import RuntimeWidget
-from widgets.clock_widget import ClockWidget
+from widgets.header_widgets.system_widget import SystemWidget
+from widgets.header_widgets.environment_widget import EnvironmentWidget
+from widgets.header_widgets.runtime_widget import RuntimeWidget
+from widgets.header_widgets.clock_widget import ClockWidget
 
 # ==========================================================
 # Header

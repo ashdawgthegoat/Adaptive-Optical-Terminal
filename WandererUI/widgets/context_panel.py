@@ -9,8 +9,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 
-from widgets.info_cell import InfoCell
-from widgets.panel import Panel
+from widgets.context_widgets.info_cell import InfoCell
+from widgets.layer.panel import Panel
 
 from utils.system_info import SystemInfo
 

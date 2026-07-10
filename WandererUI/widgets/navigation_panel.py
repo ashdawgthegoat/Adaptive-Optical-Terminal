@@ -8,8 +8,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
-from widgets.navigation_item import NavigationItem
-from widgets.panel import Panel
+from widgets.navigation_widgets.navigation_item import NavigationItem
+from widgets.layer.panel import Panel
 
 # ==========================================================
 # Navigation Panel

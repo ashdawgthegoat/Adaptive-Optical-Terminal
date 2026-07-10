@@ -11,7 +11,7 @@ from PyQt6.QtGui import QFont
 from widgets.renderers.ascii_renderer import AsciiRenderer
 from widgets.renderers.image_renderer import ImageRenderer
 
-from widgets.panel import Panel
+from widgets.layer.panel import Panel
 
 # ==========================================================
 # Viewport

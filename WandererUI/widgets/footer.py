@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
 
 from PyQt6.QtGui import QFont
 
-from widgets.panel import Panel
+from widgets.layer.panel import Panel
 
 # ==========================================================
 # Footer

@@ -10,14 +10,14 @@ from PyQt6.QtCore import (
 
 from PyQt6.QtGui import QFont
 
-from widgets.panel import Panel
+from widgets.layer.panel import Panel
 
 
-class EnvironmentWidget(Panel):
+class RuntimeWidget(Panel):
 
     # Emitted when the user activates this widget.
-    # Later this will cycle through themes, wallpapers
-    # and typography presets.
+    # Later this will open the running applications menu
+    # or switch between active applications/workbenches.
     activated = pyqtSignal()
 
     def __init__(self, maaya):
@@ -36,25 +36,25 @@ class EnvironmentWidget(Panel):
 
     def build_ui(self):
 
-        # Placeholder environment controls.
-        # These will later become interactive controls
-        # for Maaya.
-        self.environment = QLabel(
-            "🎨  🖼  Aa"
+        # Placeholder runtime information.
+        # Later this will display the currently focused
+        # application and the number of running applications.
+        self.runtime = QLabel(
+            "Home • 0"
         )
 
-        self.environment.setFont(
+        self.runtime.setFont(
             QFont(
                 self.maaya.font["family"],
                 self.typography.BODY_SIZE
             )
         )
 
-        self.environment.setStyleSheet(
+        self.runtime.setStyleSheet(
             f"color: {self.palette.PRIMARY};"
         )
 
-        self.environment.setAlignment(
+        self.runtime.setAlignment(
             Qt.AlignmentFlag.AlignCenter
         )
 
@@ -72,7 +72,7 @@ class EnvironmentWidget(Panel):
         )
 
         layout.addWidget(
-            self.environment
+            self.runtime
         )
 
         self.setLayout(
@@ -80,6 +80,19 @@ class EnvironmentWidget(Panel):
         )
 
         self.set_inactive()
+
+    def update_runtime(
+        self,
+        location: str,
+        running_apps: int
+    ):
+        """
+        Update the runtime information displayed in the header.
+        """
+
+        self.runtime.setText(
+            f"{location} • {running_apps}"
+        )
 
     def keyPressEvent(
         self,
