@@ -50,17 +50,13 @@ class AppearancePage(BasePage):
     def __init__(
         self,
         controller,
-        theme_provider,
-        wallpaper_provider,
-        font_provider,
+        maaya,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
 
         self._controller = controller
-        self._theme_provider = theme_provider
-        self._wallpaper_provider = wallpaper_provider
-        self._font_provider = font_provider
+        self._maaya = maaya
 
         # Virtual navigation index
         self._nav_index = 0
@@ -203,22 +199,19 @@ class AppearancePage(BasePage):
 
     def _refresh_themes(self) -> None:
         """Reload themes from the provider."""
-        themes = self._theme_provider.list_themes()
-        names = [t.name for t in themes]
+        names = self._maaya.available_themes()
         active = self._controller.active_theme
         self._theme_list.set_items(names, active)
 
     def _refresh_wallpapers(self) -> None:
         """Reload wallpapers from the provider."""
-        wallpapers = self._wallpaper_provider.list_wallpapers()
-        names = [w.name for w in wallpapers]
+        names = self._maaya.available_wallpapers()
         active = self._controller.active_wallpaper
         self._wallpaper_list.set_items(names, active)
 
     def _refresh_fonts(self) -> None:
         """Reload fonts from the provider."""
-        fonts = self._font_provider.list_fonts()
-        families = [f.family for f in fonts]
+        families = self._maaya.available_fonts()
         active = self._controller.active_font
         self._font_list.set_items(families, active)
 
@@ -362,6 +355,7 @@ class AppearancePage(BasePage):
     def _on_theme_activated(self, name: str) -> None:
         """Apply the selected theme."""
         self._controller.set_active_theme(name)
+        self._maaya.load_theme(name)
         self._refresh_themes()
         self._rebuild_nav()
         self._apply_nav_highlight()
@@ -369,6 +363,7 @@ class AppearancePage(BasePage):
     def _on_wallpaper_activated(self, name: str) -> None:
         """Apply the selected wallpaper."""
         self._controller.set_active_wallpaper(name)
+        self._maaya.load_wallpaper(name)
         self._refresh_wallpapers()
         self._rebuild_nav()
         self._apply_nav_highlight()
@@ -376,6 +371,7 @@ class AppearancePage(BasePage):
     def _on_font_activated(self, family: str) -> None:
         """Apply the selected font."""
         self._controller.set_active_font(family)
+        self._maaya.load_font(family)
         self._refresh_fonts()
         self._rebuild_nav()
         self._apply_nav_highlight()
@@ -391,7 +387,6 @@ if __name__ == "__main__":
 
     from PyQt6.QtWidgets import QApplication
     from apps.settings.ui.theme import load_font, build_stylesheet
-    from apps.settings.providers import ThemeProvider, WallpaperProvider, FontProvider
     from apps.settings.controller import SettingsController
 
     assets = project_root / "assets"

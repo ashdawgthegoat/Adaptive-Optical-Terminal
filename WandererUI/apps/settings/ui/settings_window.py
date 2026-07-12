@@ -59,10 +59,11 @@ class SettingsWindow(QMainWindow):
     # Construction
     # =========================================================================
 
-    def __init__(self, controller, providers: dict, parent=None) -> None:
+    def __init__(self, controller, maaya, providers: dict, parent=None) -> None:
         super().__init__(parent)
 
         self._controller = controller
+        self._maaya = maaya
         self._providers = providers
         self._focus_on_sidebar = True
 
@@ -159,11 +160,10 @@ class SettingsWindow(QMainWindow):
         """Instantiate all pages and add them to the stacked widget."""
         # 0 — Appearance
         appearance = AppearancePage(
+
             self._controller,
-            self._providers["theme"],
-            self._providers["wallpaper"],
-            self._providers["font"],
-        )
+            self._maaya,
+            )
         self._add_page(appearance)
 
         # 1 — Wi-Fi

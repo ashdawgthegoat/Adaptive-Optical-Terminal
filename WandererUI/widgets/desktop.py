@@ -3,12 +3,14 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
 )
+from PyQt6.QtCore import QTimer
 
 from widgets.header import Header
 from widgets.footer import Footer
 from widgets.navigation_panel import NavigationPanel
 from widgets.viewport import Viewport
 from widgets.context_panel import ContextPanel
+from utils.system_info import SystemInfo
 
 
 class Desktop(QWidget):
@@ -28,13 +30,16 @@ class Desktop(QWidget):
 
         self.kaizen = kaizen
 
+        self.workspace = None
+
+        self.workspace_active = False
+
         self.header = Header(
             self.maaya
         )
 
         self.navigation = NavigationPanel(
-            self.maaya,
-            self.animus
+            self.maaya
         )
 
         self.viewport = Viewport(
@@ -51,11 +56,25 @@ class Desktop(QWidget):
 
         self.build_ui()
 
+        self.set_navigation_items(
+            self.animus.list_applications()
+        )
+
         self.viewport.show_wallpaper()
+
+        self.update_system_context()
 
         self.kaizen.focus_changed.connect(
             self.update_focus
         )
+
+        self.context_timer = QTimer(self)
+
+        self.context_timer.timeout.connect(
+            self.update_system_context
+        )
+
+        self.context_timer.start(1000)
 
     def build_ui(self):
 
@@ -143,15 +162,6 @@ class Desktop(QWidget):
             desktop_layout
         )
 
-    def set_navigation(
-        self,
-        items
-    ):
-
-        self.navigation.set_items(
-            items
-        )
-
     def current_panel(self):
 
         panels = {
@@ -190,3 +200,55 @@ class Desktop(QWidget):
 
             case "footer":
                 self.footer.set_active()
+
+    def update_system_context(self):
+
+        self.context.set_context({
+
+            "CPU": SystemInfo.cpu(),
+
+            "Memory": SystemInfo.memory(),
+
+            "Storage": SystemInfo.storage(),
+
+            "Battery": SystemInfo.battery(),
+
+            "Hostname": SystemInfo.hostname(),
+
+            "Status": SystemInfo.status(),
+
+        })
+
+    # ==========================================================
+    # Workspace Management
+    # ==========================================================
+
+    def enter_workspace(self):
+        """Enter workspace mode."""
+        self.workspace_active = True
+
+
+    def exit_workspace(self):
+        """Return to desktop mode."""
+        self.workspace_active = False
+        self.workspace = None
+
+
+    def set_workspace(self, workspace):
+        """Set the currently hosted workspace."""
+        self.workspace = workspace
+
+
+    def current_workspace(self):
+        """Return the active workspace."""
+        return self.workspace
+
+
+    def in_workspace(self):
+        """True if a workspace is active."""
+        return self.workspace_active
+
+
+    def set_navigation_items(self, items):
+        """Replace navigation items."""
+        self.navigation.set_items(items)

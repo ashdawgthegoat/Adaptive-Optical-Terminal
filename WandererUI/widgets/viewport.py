@@ -16,9 +16,9 @@ from widgets.layer.panel import Panel
 # ==========================================================
 # Viewport
 #
-# Displays the primary content of the currently active
-# application. Wallpapers, animations and future application
-# views are rendered here.
+#Displays the primary workspace of WandererUI.
+#The Viewport hosts wallpapers, animations and
+#Core Applications.
 #
 # This panel participates in the focus system and renders
 # the standard panel border.
@@ -67,6 +67,8 @@ class Viewport(Panel):
         self.image_renderer = ImageRenderer(
             self.maaya
         )
+
+        self.workspace = None
 
         #self.maaya.frame_changed.connect(
         #    self.ascii_renderer.show_content
@@ -199,6 +201,9 @@ class Viewport(Panel):
     # ==========================================================
 
     def show_wallpaper(self):
+
+        if self.workspace_active():
+            return
 
         wallpaper = self.maaya.wallpaper
 
@@ -381,3 +386,34 @@ class Viewport(Panel):
         self.ascii_renderer.clear()
 
         self.image_renderer.clear()
+
+    def show_workspace(self, widget):
+        """Display a Core Application inside the viewport."""
+
+        self.hide_all_displays()
+
+        if self.workspace is not None:
+            self.workspace.setParent(None)
+
+        self.workspace = widget
+
+        self.content_layout.insertWidget(
+            2,
+            widget,
+            alignment=Qt.AlignmentFlag.AlignCenter
+        )
+
+
+    def hide_workspace(self):
+        """Remove the hosted workspace."""
+
+        if self.workspace is None:
+            return
+
+        self.workspace.setParent(None)
+
+        self.workspace = None
+
+
+    def workspace_active(self):
+        return self.workspace is not None

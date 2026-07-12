@@ -72,6 +72,14 @@ class MainWindow(QMainWindow):
             self.kaizen
         )
 
+        self.animus.desktop_launch_requested.connect(
+            self.launch_core_application
+        )
+
+        self.animus.workbench_launch_requested.connect(
+            self.launch_workbench_application
+        )
+
         self.setCentralWidget(
             self.desktop
         )
@@ -157,6 +165,21 @@ class MainWindow(QMainWindow):
             else:
 
                 super().keyPressEvent(event)
+
+    def launch_core_application(self, application):
+        """Launch a Core Application."""
+
+        print(
+            f"[Desktop] Launching {application['name']}"
+        )
+
+
+    def launch_workbench_application(self, application):
+        """Launch a Workbench application."""
+
+        print(
+            f"[Workbench] Launching {application['name']}"
+        )
 
 
 def main():

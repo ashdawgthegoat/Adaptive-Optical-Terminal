@@ -21,11 +21,9 @@ from apps.settings.ui.theme import load_font, build_stylesheet
 from apps.settings.ui.settings_window import SettingsWindow
 from apps.settings.controller import SettingsController
 from apps.settings.providers import (
-    ThemeProvider,
-    WallpaperProvider,
-    FontProvider,
-    SystemInfoProvider,
+    SystemInfoProvider
 )
+from services.maaya import Maaya
 
 
 # =============================================================================
@@ -46,17 +44,20 @@ def main() -> None:
 
     # --- Create providers ---
     providers = {
-        "theme": ThemeProvider(str(assets / "themes")),
-        "wallpaper": WallpaperProvider(str(assets / "wallpapers")),
-        "font": FontProvider(str(assets / "fonts")),
-        "system_info": SystemInfoProvider(),
+        "system_info": SystemInfoProvider()
     }
 
     # --- Create controller ---
     controller = SettingsController()
 
+    # --- Create presentation services ---
+    maaya = Maaya()
+
     # --- Create and show window ---
-    window = SettingsWindow(controller, providers)
+    window = SettingsWindow(
+        controller,
+        maaya,
+        providers)
     window.show()
 
     sys.exit(app.exec())

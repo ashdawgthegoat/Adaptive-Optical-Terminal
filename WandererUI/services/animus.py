@@ -11,6 +11,8 @@ class Animus(QObject):
 
     app_launched = pyqtSignal(str)
     app_closed = pyqtSignal(str)
+    desktop_launch_requested = pyqtSignal(dict)
+    workbench_launch_requested = pyqtSignal(dict)
     applications_changed = pyqtSignal()
 
     workbench_created = pyqtSignal()
@@ -93,6 +95,14 @@ class Animus(QObject):
         self.active_application = app
 
         self.app_launched.emit(app)
+
+        match application["runtime"]:
+
+            case "desktop":
+                self.desktop_launch_requested.emit(application)
+
+            case _:
+                self.workbench_launch_requested.emit(application)
 
     def close(self, app):
 

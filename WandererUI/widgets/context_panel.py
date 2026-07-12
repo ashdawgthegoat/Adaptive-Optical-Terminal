@@ -12,8 +12,6 @@ from PyQt6.QtGui import QFont
 from widgets.context_widgets.info_cell import InfoCell
 from widgets.layer.panel import Panel
 
-from utils.system_info import SystemInfo
-
 # ==========================================================
 # Context Panel
 #
@@ -39,14 +37,6 @@ class ContextPanel(Panel):
         self.spacing = self.maaya.theme.Spacing
         self.borders = self.maaya.theme.Borders
         self.typography = self.maaya.typography()
-
-        self.timer = QTimer(self)
-
-        self.timer.timeout.connect(
-            self.refresh_system_info
-        )
-
-        self.timer.start(1000)
 
         self.build_ui()
 
@@ -208,8 +198,6 @@ class ContextPanel(Panel):
             root_layout
         )
 
-        self.refresh_system_info()
-
         self.set_module_info({
             "Status": {
                 "value": None,
@@ -237,7 +225,7 @@ class ContextPanel(Panel):
     # Context Information
     # ==========================================================
 
-    def set_info(self, info):
+    def set_context(self, info):
 
         self._clear_layout(
             self.system_layout
@@ -256,24 +244,6 @@ class ContextPanel(Panel):
             )
 
     # =====================================
-
-    def refresh_system_info(self):
-
-        self.set_info({
-
-            "CPU": SystemInfo.cpu(),
-
-            "Memory": SystemInfo.memory(),
-
-            "Storage": SystemInfo.storage(),
-
-            "Battery": SystemInfo.battery(),
-
-            "Hostname": SystemInfo.hostname(),
-
-            "Status": SystemInfo.status(),
-
-        })
 
     def set_module_info(self, info):
 
