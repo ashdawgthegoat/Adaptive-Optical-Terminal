@@ -11,6 +11,7 @@ from widgets.navigation_panel import NavigationPanel
 from widgets.viewport import Viewport
 from widgets.context_panel import ContextPanel
 from utils.system_info import SystemInfo
+from widgets.overlay import Overlay
 
 
 class Desktop(QWidget):
@@ -53,6 +54,8 @@ class Desktop(QWidget):
         self.footer = Footer(
             self.maaya
         )
+
+        self.overlay = Overlay()
 
         self.build_ui()
 
@@ -162,6 +165,10 @@ class Desktop(QWidget):
             desktop_layout
         )
 
+        desktop_layout.addWidget(
+            self.overlay
+        )
+
     def current_panel(self):
 
         panels = {
@@ -252,3 +259,20 @@ class Desktop(QWidget):
     def set_navigation_items(self, items):
         """Replace navigation items."""
         self.navigation.set_items(items)
+
+    def show_overlay(self, title, items):
+
+        self.overlay.show_overlay(
+            title,
+            items
+        )
+
+
+    def hide_overlay(self):
+
+        self.overlay.hide_overlay()
+
+
+    def overlay_visible(self):
+
+        return self.overlay.isVisible()

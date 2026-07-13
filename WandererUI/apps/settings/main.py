@@ -18,12 +18,10 @@ sys.path.insert(0, str(project_root))
 from PyQt6.QtWidgets import QApplication
 
 from apps.settings.ui.theme import load_font, build_stylesheet
-from apps.settings.ui.settings_window import SettingsWindow
-from apps.settings.controller import SettingsController
-from apps.settings.providers import (
-    SystemInfoProvider
-)
 from services.maaya import Maaya
+from apps.settings.application import (
+    create_settings_application
+)
 
 
 # =============================================================================
@@ -42,22 +40,16 @@ def main() -> None:
     load_font(str(font_path))
     app.setStyleSheet(build_stylesheet())
 
-    # --- Create providers ---
-    providers = {
-        "system_info": SystemInfoProvider()
-    }
-
-    # --- Create controller ---
-    controller = SettingsController()
-
     # --- Create presentation services ---
     maaya = Maaya()
 
-    # --- Create and show window ---
-    window = SettingsWindow(
-        controller,
-        maaya,
-        providers)
+    # --- Create window ---
+
+    window = create_settings_application(
+        maaya
+    )
+
+    # --- show window ---
     window.show()
 
     sys.exit(app.exec())
