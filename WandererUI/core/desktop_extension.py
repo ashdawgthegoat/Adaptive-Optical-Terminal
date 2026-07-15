@@ -21,13 +21,13 @@ class DesktopApplication(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def context_widget(self):
-        """Widget displayed inside the Context Panel."""
+    def context(self):
+        """Content displayed inside the Context Panel."""
         raise NotImplementedError
 
     @abstractmethod
-    def preview_widget(self):
-        """Widget displayed inside the Viewport."""
+    def viewport(self):
+        """Content displayed inside the Viewport."""
         raise NotImplementedError
 
     @abstractmethod

@@ -71,6 +71,14 @@ class Desktop(QWidget):
             self.update_focus
         )
 
+        self.animus.applications_changed.connect(
+            self.refresh_navigation
+        )
+
+        self.navigation.activated.connect(
+            self.activate_navigation_item
+        )
+
         self.context_timer = QTimer(self)
 
         self.context_timer.timeout.connect(
@@ -169,6 +177,28 @@ class Desktop(QWidget):
             self.overlay
         )
 
+    def activate_navigation_item(self, item):
+        """Handle activation from the Navigation Panel."""
+
+        if not self.in_application():
+
+            self.animus.launch(
+                item["id"]
+            )
+
+            return
+
+        self.application.activate(
+            item
+        )
+
+    def refresh_navigation(self):
+        """Refresh the Navigation Panel."""
+
+        self.set_navigation_items(
+            self.animus.list_applications()
+        )
+
     def current_panel(self):
 
         panels = {
@@ -233,11 +263,48 @@ class Desktop(QWidget):
     def enter_application(self, application):
         """Host a Desktop Application."""
 
+        print("[4] enter_application()")
+
         self.application = application
         self.application_active = True
 
-        application.on_enter()
+        # Navigation
 
+        self.navigation.set_title(
+            application.name().upper()
+        )
+
+        self.navigation.set_items(
+            application.navigation_items()
+        )
+
+        # Footer
+
+        self.footer.set_controls(
+            application.footer_hints()
+        )
+
+        # Context
+
+        context = application.context()
+
+        if context is not None:
+
+            self.context.set_content(
+                context
+            )
+
+        # Viewport
+
+        preview = application.viewport()
+
+        if preview is not None:
+
+            self.viewport.show_preview(
+                preview
+            )
+
+        application.on_enter()
 
     def exit_application(self):
         """Return to the normal desktop."""

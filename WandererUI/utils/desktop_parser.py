@@ -44,6 +44,11 @@ class DesktopParser:
                 "X-Wanderer-Runtime",
                 "workbench"
             ).lower(),
+
+            "entry": entry.get(
+                "X-Wanderer-Entry",
+                ""
+            ),
             
             "path": str(path)
         }

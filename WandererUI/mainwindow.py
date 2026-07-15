@@ -169,8 +169,20 @@ class MainWindow(QMainWindow):
     def launch_core_application(self, application):
         """Launch a Core Application."""
 
-        print(
-            f"[Desktop] Launching {application['name']}"
+        print("[3] desktop_launch_requested")
+
+        desktop_application = (
+            self.animus.create_desktop_application(
+                application,
+                self.maaya
+            )
+        )
+
+        if desktop_application is None:
+            return
+
+        self.desktop.enter_application(
+            desktop_application
         )
 
 

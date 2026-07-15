@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
     QWidget
 )
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
 
 from widgets.navigation_widgets.navigation_item import NavigationItem
@@ -20,6 +20,8 @@ from widgets.layer.panel import Panel
 # ==========================================================
 
 class NavigationPanel(Panel):
+
+    activated = pyqtSignal(object)
 
     def __init__(
         self,
@@ -243,6 +245,22 @@ class NavigationPanel(Panel):
             self.current_selection = index
 
             self.update_selection()
+
+    # ==========================================================
+    # Activation
+    # ==========================================================
+
+    def activate(self):
+        """Activate the currently selected entry."""
+
+        print("[1] activate()")
+
+        item = self.current_item()
+
+        if item is None:
+            return
+
+        self.activated.emit(item)
 
     # ==========================================================
     # Cleanup

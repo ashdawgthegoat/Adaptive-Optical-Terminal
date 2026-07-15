@@ -15,3 +15,4 @@ Categories=Settings;System;
 
 X-Wanderer-Native=true
 X-Wanderer-Runtime=desktop
+X-Wanderer-Entry=apps.settings.application:create_settings_application

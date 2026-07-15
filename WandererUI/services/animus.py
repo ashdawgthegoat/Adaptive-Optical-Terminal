@@ -6,6 +6,7 @@ from PyQt6.QtCore import (
 )
 
 from utils.desktop_parser import DesktopParser
+import importlib
 
 class Animus(QObject):
 
@@ -77,7 +78,43 @@ class Animus(QObject):
 
         self.applications_changed.emit()
 
+    def create_desktop_application(self, application, maaya):
+        """
+        Create a Desktop Application from its entry point.
+        """
+
+        entry = application.get("entry", "")
+
+        if not entry:
+            return None
+
+        try:
+
+            module_name, factory_name = entry.split(":")
+
+            module = importlib.import_module(
+                module_name
+            )
+
+            factory = getattr(
+                module,
+                factory_name
+            )
+
+            return factory(maaya)
+
+        except Exception as error:
+
+            print(
+                f"[Animus] Failed to create "
+                f"{application['name']}: {error}"
+            )
+
+            return None
+
     def launch(self, app):
+
+        print(f"[2] launch({app})")
 
         if app not in self.applications:
             return
