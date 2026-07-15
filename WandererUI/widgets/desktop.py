@@ -31,9 +31,9 @@ class Desktop(QWidget):
 
         self.kaizen = kaizen
 
-        self.workspace = None
+        self.application = None
 
-        self.workspace_active = False
+        self.application_active = False
 
         self.header = Header(
             self.maaya
@@ -227,33 +227,38 @@ class Desktop(QWidget):
         })
 
     # ==========================================================
-    # Workspace Management
+    # Desktop Application Management
     # ==========================================================
 
-    def enter_workspace(self):
-        """Enter workspace mode."""
-        self.workspace_active = True
+    def enter_application(self, application):
+        """Host a Desktop Application."""
+
+        self.application = application
+        self.application_active = True
+
+        application.on_enter()
 
 
-    def exit_workspace(self):
-        """Return to desktop mode."""
-        self.workspace_active = False
-        self.workspace = None
+    def exit_application(self):
+        """Return to the normal desktop."""
+
+        if self.application is not None:
+            self.application.on_leave()
+
+        self.application = None
+        self.application_active = False
 
 
-    def set_workspace(self, workspace):
-        """Set the currently hosted workspace."""
-        self.workspace = workspace
+    def current_application(self):
+        """Return the active Desktop Application."""
+
+        return self.application
 
 
-    def current_workspace(self):
-        """Return the active workspace."""
-        return self.workspace
+    def in_application(self):
+        """True if a Desktop Application is active."""
 
-
-    def in_workspace(self):
-        """True if a workspace is active."""
-        return self.workspace_active
+        return self.application_active
 
 
     def set_navigation_items(self, items):

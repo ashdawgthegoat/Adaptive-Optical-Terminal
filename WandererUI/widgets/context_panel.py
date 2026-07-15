@@ -103,6 +103,8 @@ class ContextPanel(Panel):
 
         self.system_layout = QVBoxLayout()
 
+        self.content_widget = None
+
         self.system_layout.setSpacing(0)
 
         self.main_layout.addLayout(
@@ -206,6 +208,19 @@ class ContextPanel(Panel):
         })
 
         self.set_inactive()
+
+    def set_content(self, widget):
+        """Display a custom widget inside the context panel."""
+
+        self._clear_layout(
+            self.system_layout
+        )
+
+        self.content_widget = widget
+
+        self.system_layout.addWidget(
+            widget
+        )
 
     # ==========================================================
     # Layout Utilities

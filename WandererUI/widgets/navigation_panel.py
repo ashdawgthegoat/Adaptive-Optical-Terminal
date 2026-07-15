@@ -37,7 +37,7 @@ class NavigationPanel(Panel):
         self.spacing = self.maaya.theme.Spacing
         self.typography = self.maaya.typography()
 
-        self.title = QLabel("MAIN MENU")
+        self.title = QLabel()
 
         self.items = []
 
@@ -52,6 +52,8 @@ class NavigationPanel(Panel):
     # ==========================================================
 
     def build_ui(self):
+
+        self.set_title("MAIN MENU")
 
         self.layout = QVBoxLayout()
 
@@ -140,6 +142,10 @@ class NavigationPanel(Panel):
 
         self.set_inactive()
 
+    def set_title(self, title):
+
+        self.title.setText(title)
+
     # ==========================================================
     # Navigation Item Management
     # ==========================================================
@@ -159,11 +165,11 @@ class NavigationPanel(Panel):
 
         self.nav_items.clear()
 
-        for application in self.items:
+        for entry in self.items:
 
             item = NavigationItem(
                 self.maaya,
-                application
+                entry
             )
 
             item.clicked.connect(

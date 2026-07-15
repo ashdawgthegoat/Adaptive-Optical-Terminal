@@ -16,7 +16,7 @@ from widgets.layer.panel import Panel
 # ==========================================================
 # Viewport
 #
-#Displays the primary workspace of WandererUI.
+#Displays the primary preview of WandererUI.
 #The Viewport hosts wallpapers, animations and
 #Core Applications.
 #
@@ -68,7 +68,7 @@ class Viewport(Panel):
             self.maaya
         )
 
-        self.workspace = None
+        self.preview = None
 
         #self.maaya.frame_changed.connect(
         #    self.ascii_renderer.show_content
@@ -202,7 +202,7 @@ class Viewport(Panel):
 
     def show_wallpaper(self):
 
-        if self.workspace_active():
+        if self.preview_active():
             return
 
         wallpaper = self.maaya.wallpaper
@@ -387,15 +387,15 @@ class Viewport(Panel):
 
         self.image_renderer.clear()
 
-    def show_workspace(self, widget):
-        """Display a Core Application inside the viewport."""
+    def show_preview(self, widget):
+        """Display custom preview content inside the viewport."""
 
         self.hide_all_displays()
 
-        if self.workspace is not None:
-            self.workspace.setParent(None)
+        if self.preview is not None:
+            self.preview.setParent(None)
 
-        self.workspace = widget
+        self.preview = widget
 
         self.content_layout.insertWidget(
             2,
@@ -404,16 +404,16 @@ class Viewport(Panel):
         )
 
 
-    def hide_workspace(self):
-        """Remove the hosted workspace."""
+    def hide_preview(self):
+        """Remove the hosted preview."""
 
-        if self.workspace is None:
+        if self.preview is None:
             return
 
-        self.workspace.setParent(None)
+        self.preview.setParent(None)
 
-        self.workspace = None
+        self.preview = None
 
 
-    def workspace_active(self):
-        return self.workspace is not None
+    def preview_active(self):
+        return self.preview is not None

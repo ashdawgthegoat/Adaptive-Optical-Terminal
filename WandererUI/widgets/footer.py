@@ -10,7 +10,8 @@ from widgets.layer.panel import Panel
 # ==========================================================
 # Footer
 #
-# Displays global controls and the current system status.
+# Displays contextual controls and status for the
+# currently active Desktop state.
 #
 # This panel participates in the focus system and renders
 # the standard panel border.
