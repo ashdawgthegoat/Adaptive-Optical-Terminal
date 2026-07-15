@@ -25,7 +25,7 @@ class SettingsController(QObject):
     # Signals
     # ======================================================
 
-    page_changed = pyqtSignal(int)
+    page_changed = pyqtSignal(str)
 
     theme_changed = pyqtSignal(str)
 
@@ -41,7 +41,7 @@ class SettingsController(QObject):
 
         super().__init__(parent)
 
-        self._current_page: int = 0
+        self._current_page = "Appearance"
         self._active_theme: str | None = None
         self._active_wallpaper: str | None = None
         self._active_font: str | None = None
@@ -51,10 +51,7 @@ class SettingsController(QObject):
     # ======================================================
 
     @property
-    def current_page(self) -> int:
-        """
-        Returns the index of the currently visible page.
-        """
+    def current_page(self):
 
         return self._current_page
 
@@ -95,19 +92,15 @@ class SettingsController(QObject):
     # Setters
     # ======================================================
 
-    def set_current_page(self, index: int):
-        """
-        Sets the current page index and emits page_changed
-        if the value has changed.
-        """
-
-        if index == self._current_page:
+    def set_current_page(self, page: str):
+        
+        if page == self._current_page:
 
             return
 
-        self._current_page = index
+        self._current_page = page
 
-        self.page_changed.emit(index)
+        self.page_changed.emit(page)
 
     # ======================================================
 

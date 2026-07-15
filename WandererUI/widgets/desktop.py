@@ -192,6 +192,23 @@ class Desktop(QWidget):
             item
         )
 
+        self.refresh_application()
+
+    def activate_context_item(self):
+        """Handle activation from the Context Panel."""
+
+        if not self.in_application():
+            return
+
+        property_name = self.context.activate()
+
+        if property_name is None:
+            return
+
+        self.application.activate_property(
+            property_name
+        )
+
     def refresh_navigation(self):
         """Refresh the Navigation Panel."""
 
@@ -240,6 +257,9 @@ class Desktop(QWidget):
 
     def update_system_context(self):
 
+        if self.in_application():
+            return
+
         self.context.set_context({
 
             "CPU": SystemInfo.cpu(),
@@ -267,6 +287,7 @@ class Desktop(QWidget):
 
         self.application = application
         self.application_active = True
+        self.context_timer.stop()
 
         # Navigation
 
@@ -278,33 +299,45 @@ class Desktop(QWidget):
             application.navigation_items()
         )
 
+        self.refresh_application()
+
+        application.on_enter()
+
+    def refresh_application(self):
+        """Refresh the hosted Desktop Application."""
+
+        if self.application is None:
+            return
+
         # Footer
 
         self.footer.set_controls(
-            application.footer_hints()
+            self.application.footer_hints()
         )
 
         # Context
 
-        context = application.context()
+        context = self.application.context()
 
         if context is not None:
 
-            self.context.set_content(
+            self.context.set_title(
+                self.application.controller.current_page.upper()
+            )
+
+            self.context.set_properties(
                 context
             )
 
         # Viewport
 
-        preview = application.viewport()
+        preview = self.application.viewport()
 
         if preview is not None:
 
             self.viewport.show_preview(
                 preview
             )
-
-        application.on_enter()
 
     def exit_application(self):
         """Return to the normal desktop."""
@@ -314,6 +347,8 @@ class Desktop(QWidget):
 
         self.application = None
         self.application_active = False
+
+        self.context_timer.start(1000)
 
 
     def current_application(self):

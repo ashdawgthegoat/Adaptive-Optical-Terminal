@@ -142,7 +142,13 @@ class MainWindow(QMainWindow):
                 Qt.Key.Key_Enter
             ):
 
-                panel.activate()
+                if self.kaizen.has_focus("context"):
+
+                    self.desktop.activate_context_item()
+
+                else:
+
+                    panel.activate()
 
         else:
 

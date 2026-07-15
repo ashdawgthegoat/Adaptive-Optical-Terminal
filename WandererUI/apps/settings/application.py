@@ -35,7 +35,41 @@ class SettingsApplication(DesktopApplication):
 
     def context(self):
 
-        return None
+        match self.controller.current_page:
+
+            case "Appearance":
+
+                return {
+
+                    "Theme": {
+                        "value": self.maaya.theme.__name__,
+                        "text": "Current theme"
+                    },
+
+                    "Wallpaper": {
+                        "value": self.maaya.wallpaper["filename"],
+                        "text": "Desktop wallpaper"
+                    },
+
+                    "Font": {
+                        "value": self.maaya.font["package"],
+                        "text": self.maaya.font["family"]
+                    },
+
+                    "Accent": {
+                        "value": self.maaya.theme.Palette.ACCENT,
+                        "text": "Accent colour"
+                    }
+
+                }
+
+            case _:
+
+                return {
+
+                    "Status": "Coming Soon"
+
+                }
 
     def viewport(self):
 
@@ -44,7 +78,19 @@ class SettingsApplication(DesktopApplication):
     def activate(self, item):
         """Activate the selected Settings category."""
 
-        print(f"[Settings] {item}")
+        self.controller.set_current_page(
+            item
+        )
+
+    def activate_property(
+        self,
+        property_name
+    ):
+        """Activate the selected property."""
+
+        print(
+            f"[Settings] {property_name}"
+        )
 
     def footer_hints(self):
 

@@ -10,6 +10,7 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 
 from widgets.context_widgets.info_cell import InfoCell
+from widgets.context_widgets.property_cell import PropertyCell
 from widgets.layer.panel import Panel
 
 # ==========================================================
@@ -37,6 +38,10 @@ class ContextPanel(Panel):
         self.spacing = self.maaya.theme.Spacing
         self.borders = self.maaya.theme.Borders
         self.typography = self.maaya.typography()
+
+        self.properties = []
+
+        self.current_index = 0
 
         self.build_ui()
 
@@ -257,6 +262,99 @@ class ContextPanel(Panel):
             self.system_layout.addWidget(
                 cell
             )
+
+    def set_properties(self, properties):
+        """Display configurable application properties."""
+
+        self.properties.clear()
+
+        self.current_index = 0
+
+        self._clear_layout(
+            self.system_layout
+        )
+
+        for title, value in properties.items():
+
+            cell = PropertyCell(
+                self.maaya,
+                title=title,
+                value=value
+            )
+
+            self.properties.append(
+                cell
+            )
+
+            self.system_layout.addWidget(
+                cell
+            )
+
+        if self.properties:
+
+            self.properties[0].set_selected()
+
+        self.system_layout.addStretch()
+
+    # =======================================
+    # Navigation
+    # =======================================
+
+    def move_up(self):
+
+        if not self.properties:
+            return
+
+        self.properties[
+            self.current_index
+        ].set_unselected()
+
+        self.current_index = max(
+            0,
+            self.current_index - 1
+        )
+
+        self.properties[
+            self.current_index
+        ].set_selected()
+
+    def move_down(self):
+
+        if not self.properties:
+            return
+
+        self.properties[
+            self.current_index
+        ].set_unselected()
+
+        self.current_index = min(
+            len(self.properties) - 1,
+            self.current_index + 1
+        )
+
+        self.properties[
+            self.current_index
+        ].set_selected()
+
+    # ====================================
+
+    def current_property(self):
+
+        if not self.properties:
+            return None
+
+        return self.properties[
+            self.current_index
+        ].title_text
+
+    # =====================================
+
+    def activate(self):
+
+        if not self.properties:
+            return
+
+        return self.current_property()
 
     # =====================================
 
