@@ -204,6 +204,46 @@ class Header(Panel):
             f"color: {self.palette.ACCENT};"
         )
 
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.spacing = self.maaya.theme.Spacing
+
+        self.typography = self.maaya.typography()
+
+        self.title.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.TITLE_SIZE
+            )
+        )
+
+        self.subtitle.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.BODY_SIZE
+            )
+        )
+
+        self.title.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.subtitle.setStyleSheet(
+            f"color: {self.palette.ACCENT};"
+        )
+
+        self.system_widget.refresh_presentation()
+
+        self.environment_widget.refresh_presentation()
+
+        self.runtime_widget.refresh_presentation()
+
+        self.clock_widget.refresh_presentation()
+
+        self.update()
+
     # ==========================================================
     # Keyboard Interaction
     # ==========================================================

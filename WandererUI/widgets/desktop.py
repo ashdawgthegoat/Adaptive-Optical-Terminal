@@ -35,6 +35,8 @@ class Desktop(QWidget):
 
         self.application_active = False
 
+        self.overlay_callback = None
+
         self.header = Header(
             self.maaya
         )
@@ -77,6 +79,14 @@ class Desktop(QWidget):
 
         self.navigation.activated.connect(
             self.activate_navigation_item
+        )
+
+        self.overlay.item_selected.connect(
+            self.overlay_selected
+        )
+
+        self.overlay.cancelled.connect(
+            self.hide_overlay
         )
 
         self.context_timer = QTimer(self)
@@ -286,6 +296,9 @@ class Desktop(QWidget):
         print("[4] enter_application()")
 
         self.application = application
+        self.application.set_desktop(
+            self
+        )
         self.application_active = True
         self.context_timer.stop()
 
@@ -293,6 +306,10 @@ class Desktop(QWidget):
 
         self.navigation.set_title(
             application.name().upper()
+        )
+
+        self.viewport.set_title(
+            application.viewport_title()
         )
 
         self.navigation.set_items(
@@ -331,6 +348,10 @@ class Desktop(QWidget):
 
         # Viewport
 
+        self.viewport.set_title(
+            self.application.viewport_title()
+        )
+
         preview = self.application.viewport()
 
         if preview is not None:
@@ -347,6 +368,14 @@ class Desktop(QWidget):
 
         self.application = None
         self.application_active = False
+
+        self.viewport.set_title(
+            "Viewport"
+        )
+
+        self.navigation.set_title(
+            "Applications"
+        )
 
         self.context_timer.start(1000)
 
@@ -367,17 +396,85 @@ class Desktop(QWidget):
         """Replace navigation items."""
         self.navigation.set_items(items)
 
-    def show_overlay(self, title, items):
+    def refresh(
+        self,
+        target
+    ):
+
+        match target:
+
+            case "theme":
+
+                self.header.refresh_presentation()
+
+                self.navigation.refresh_presentation()
+
+                self.viewport.refresh_presentation()
+
+                self.context.refresh_presentation()
+
+                self.footer.refresh_presentation()
+
+                self.overlay.refresh_presentation()
+
+            case "font":
+
+                self.header.refresh_presentation()
+
+                self.navigation.refresh_presentation()
+
+                self.viewport.refresh_presentation()
+
+                self.context.refresh_presentation()
+
+                self.footer.refresh_presentation()
+
+                self.overlay.refresh_presentation()
+
+            case "wallpaper":
+
+                self.viewport.show_wallpaper()
+
+        if self.in_application():
+
+            self.refresh_application()
+
+        else:
+
+            self.update_system_context()
+
+        self.update()
+
+
+    def show_overlay(
+        self,
+        title,
+        items,
+        callback
+    ):
+
+        self.overlay_callback = callback
 
         self.overlay.show_overlay(
             title,
             items
         )
 
-
     def hide_overlay(self):
 
         self.overlay.hide_overlay()
+
+    def overlay_selected(self, item):
+        """Forward overlay selection to the requester."""
+
+        if self.overlay_callback is None:
+            return
+
+        self.overlay_callback(
+            item
+        )
+
+        self.overlay_callback = None
 
 
     def overlay_visible(self):

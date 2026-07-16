@@ -263,6 +263,39 @@ class NavigationPanel(Panel):
         self.activated.emit(item)
 
     # ==========================================================
+    # Refresh
+    # ==========================================================
+
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.spacing = self.maaya.theme.Spacing
+
+        self.typography = self.maaya.typography()
+
+        self.title.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.SECTION_SIZE
+            )
+        )
+
+        self.title.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.content_layout.setSpacing(
+            self.spacing.ITEM_SPACING
+        )
+
+        for item in self.nav_items:
+
+            item.refresh_presentation()
+
+        self.update()
+
+    # ==========================================================
     # Cleanup
     # ==========================================================
 

@@ -65,6 +65,12 @@ class Overlay(QWidget):
 
         self.list.setText("\n".join(lines))
 
+    def refresh_presentation(self):
+
+        self.refresh()
+
+        self.update()
+
     def move_up(self):
 
         if not self.items:

@@ -193,6 +193,41 @@ class InfoCell(QWidget):
 
     # =========================================
 
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.typography = self.maaya.typography()
+
+        font = QFont(
+            self.maaya.font["family"],
+            self.typography.FOOTER_SIZE
+        )
+
+        self.title.setFont(font)
+
+        self.icon.setFont(font)
+
+        self.value.setFont(font)
+
+        self.title.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.icon.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.value.setStyleSheet(
+            f"color: {self.palette.SECONDARY};"
+        )
+
+        self.value.setText(
+            self.render_text()
+        )
+
+        self.update()
+
     def mousePressEvent(
         self,
         event

@@ -89,6 +89,27 @@ class ClockWidget(Panel):
 
         self.set_inactive()
 
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.spacing = self.maaya.theme.Spacing
+
+        self.typography = self.maaya.typography()
+
+        self.clock.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.BODY_SIZE
+            )
+        )
+
+        self.clock.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.update()
+
     def update_time(self):
 
         current = QDateTime.currentDateTime()

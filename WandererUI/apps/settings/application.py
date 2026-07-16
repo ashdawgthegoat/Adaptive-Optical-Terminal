@@ -5,6 +5,9 @@ from apps.settings.providers import (
 )
 
 from core.desktop_extension import DesktopApplication
+from apps.settings.viewport import (
+    SettingsViewport
+)
 
 class SettingsApplication(DesktopApplication):
 
@@ -17,6 +20,12 @@ class SettingsApplication(DesktopApplication):
         self.providers = {
             "system_info": SystemInfoProvider()
         }
+
+        self.viewport_widget = SettingsViewport(
+            self.maaya
+        )
+
+        self.desktop = None
 
     def name(self):
 
@@ -32,6 +41,13 @@ class SettingsApplication(DesktopApplication):
             "Modules",
             "About"
         ]
+
+    def set_desktop(
+        self,
+        desktop
+    ):
+
+        self.desktop = desktop
 
     def context(self):
 
@@ -73,7 +89,7 @@ class SettingsApplication(DesktopApplication):
 
     def viewport(self):
 
-        return None
+        return self.viewport_widget
 
     def activate(self, item):
         """Activate the selected Settings category."""
@@ -82,15 +98,86 @@ class SettingsApplication(DesktopApplication):
             item
         )
 
+        self.viewport_widget.show_page(
+            item
+        )
+
+        self.desktop.refresh_application()
+
     def activate_property(
         self,
         property_name
     ):
-        """Activate the selected property."""
 
-        print(
-            f"[Settings] {property_name}"
+        match property_name:
+
+            case "Theme":
+
+                self.desktop.show_overlay(
+                    "Theme",
+                    self.maaya.available_themes(),
+                    self.theme_selected
+                )
+
+            case "Wallpaper":
+
+                self.desktop.show_overlay(
+                    "Wallpaper",
+                    self.maaya.available_wallpapers(
+                        "static"
+                    ),
+                    self.wallpaper_selected
+                )
+
+            case "Font":
+
+                self.desktop.show_overlay(
+                    "Font",
+                    self.maaya.available_fonts(),
+                    self.font_selected
+                )
+
+    def theme_selected(
+        self,
+        theme
+    ):
+
+        self.viewport_widget.preview_theme(
+            theme
         )
+
+        self.desktop.refresh_application()
+
+
+    def wallpaper_selected(
+        self,
+        wallpaper
+    ):
+
+        wallpaper = self.maaya.load_wallpaper(
+            "static",
+            wallpaper
+        )
+
+        if wallpaper is None:
+            return
+
+        self.viewport_widget.preview_wallpaper(
+            wallpaper
+        )
+
+        self.desktop.refresh_application()
+
+    def font_selected(
+        self,
+        font
+    ):
+
+        self.viewport_widget.preview_font(
+            font
+        )
+
+        self.desktop.refresh_application()
 
     def footer_hints(self):
 

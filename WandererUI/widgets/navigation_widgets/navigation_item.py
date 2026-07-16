@@ -154,6 +154,27 @@ class NavigationItem(QFrame):
                 }}
                 """
             )
+    
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.typography = self.maaya.typography()
+
+        self.label.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.SECTION_SIZE
+            )
+        )
+
+        self.accent.setStyleSheet(
+            f"background-color: {self.palette.ACCENT};"
+        )
+
+        self.update_style()
+
+        self.update()
 
     def application_id(self):
 

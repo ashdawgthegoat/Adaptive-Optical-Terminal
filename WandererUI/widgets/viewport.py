@@ -414,6 +414,38 @@ class Viewport(Panel):
 
         self.preview = None
 
+    def set_title(
+        self,
+        title
+    ):
+
+        self.title.setText(
+            title.upper()
+        )
+
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.typography = self.maaya.typography()
+
+        self.title.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.SECTION_SIZE
+            )
+        )
+
+        self.title.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.ascii_renderer.refresh_presentation()
+
+        self.image_renderer.refresh_presentation()
+
+        self.update()
+
 
     def preview_active(self):
         return self.preview is not None

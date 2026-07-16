@@ -101,6 +101,18 @@ class ImageRenderer(BaseRenderer):
 
         self.label.setPixmap(scaled)
 
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.label.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.update_display()
+
+        self.update()
+
     def clear(self):
 
         self.label.clear()

@@ -30,6 +30,14 @@ class DesktopApplication(ABC):
         """Content displayed inside the Viewport."""
         raise NotImplementedError
 
+    def viewport_title(self) -> str:
+        """
+        Title displayed by the Desktop's
+        Viewport panel.
+        """
+
+        return "Viewport"
+
     @abstractmethod
     def footer_hints(self) -> str:
         """Keyboard hints shown in the Footer."""

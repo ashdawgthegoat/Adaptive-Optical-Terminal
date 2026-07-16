@@ -250,6 +250,38 @@ class PropertyCell(QFrame):
 
     # ======================================================
 
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.typography = self.maaya.typography()
+
+        font = QFont(
+            self.maaya.font["family"],
+            self.typography.FOOTER_SIZE
+        )
+
+        self.title.setFont(font)
+
+        self.value.setFont(font)
+
+        self.description_label.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.FOOTER_SIZE - 1
+            )
+        )
+
+        if self.selected:
+
+            self.set_selected()
+
+        else:
+
+            self.set_unselected()
+
+        self.update()
+
     def mousePressEvent(
         self,
         event

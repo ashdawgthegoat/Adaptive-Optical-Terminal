@@ -114,3 +114,32 @@ class Footer(Panel):
         self.status.setText(
             text
         )
+
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.typography = self.maaya.typography()
+
+        footer_font = QFont(
+            self.maaya.font["family"],
+            self.typography.FOOTER_SIZE
+        )
+
+        self.controls.setFont(
+            footer_font
+        )
+
+        self.status.setFont(
+            footer_font
+        )
+
+        self.controls.setStyleSheet(
+            f"color: {self.palette.SECONDARY};"
+        )
+
+        self.status.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.update()

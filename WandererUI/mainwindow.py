@@ -99,6 +99,35 @@ class MainWindow(QMainWindow):
 
         key = event.key()
 
+        if self.desktop.overlay_visible():
+
+            if key == Qt.Key.Key_Up:
+
+                self.desktop.overlay.move_up()
+
+                return
+
+            elif key == Qt.Key.Key_Down:
+
+                self.desktop.overlay.move_down()
+
+                return
+
+            elif key in (
+                Qt.Key.Key_Return,
+                Qt.Key.Key_Enter
+            ):
+
+                self.desktop.overlay.activate()
+
+                return
+
+            elif key == Qt.Key.Key_Escape:
+
+                self.desktop.hide_overlay()
+
+                return
+
         if key == Qt.Key.Key_Control:
 
             locked = self.kaizen.toggle_lock()

@@ -76,6 +76,27 @@ class AsciiRenderer(BaseRenderer):
             self.content
         )
 
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.typography = self.maaya.typography()
+
+        self.label.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.BODY_SIZE
+            )
+        )
+
+        self.label.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.update_display()
+
+        self.update()
+
     def clear(self):
 
         self.label.clear()

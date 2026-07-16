@@ -386,6 +386,77 @@ class ContextPanel(Panel):
             title
         )
 
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.spacing = self.maaya.theme.Spacing
+
+        self.borders = self.maaya.theme.Borders
+
+        self.typography = self.maaya.typography()
+
+        self.system_title.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.SECTION_SIZE
+            )
+        )
+
+        self.module_title.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.SECTION_SIZE
+            )
+        )
+
+        self.system_title.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.module_title.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.divider.setFixedHeight(
+            self.borders.WIDTH
+        )
+
+        self.divider.setStyleSheet(
+            f"background-color: {self.palette.ACCENT};"
+        )
+
+        self.main_layout.setSpacing(
+            self.spacing.ITEM_SPACING
+        )
+
+        for cell in self.properties:
+
+            cell.refresh_presentation()
+
+        for layout in (
+            self.system_layout,
+            self.module_layout
+        ):
+
+            for i in range(layout.count()):
+
+                item = layout.itemAt(i)
+
+                widget = item.widget()
+
+                if (
+                    widget is not None
+                    and hasattr(
+                        widget,
+                        "refresh_presentation"
+                    )
+                ):
+
+                    widget.refresh_presentation()
+
+        self.update()
+
     # ==========================================================
     # Reset State
     # ==========================================================

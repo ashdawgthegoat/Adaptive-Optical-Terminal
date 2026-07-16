@@ -79,6 +79,27 @@ class SystemWidget(Panel):
 
         self.set_inactive()
 
+    def refresh_presentation(self):
+
+        self.palette = self.maaya.theme.Palette
+
+        self.spacing = self.maaya.theme.Spacing
+
+        self.typography = self.maaya.typography()
+
+        self.system.setFont(
+            QFont(
+                self.maaya.font["family"],
+                self.typography.BODY_SIZE
+            )
+        )
+
+        self.system.setStyleSheet(
+            f"color: {self.palette.PRIMARY};"
+        )
+
+        self.update()
+
     def keyPressEvent(
         self,
         event
