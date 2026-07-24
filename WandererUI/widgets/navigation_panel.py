@@ -22,6 +22,7 @@ from widgets.layer.panel import Panel
 class NavigationPanel(Panel):
 
     activated = pyqtSignal(object)
+    selection_changed = pyqtSignal(object)
 
     def __init__(
         self,
@@ -213,6 +214,10 @@ class NavigationPanel(Panel):
 
         self.update_selection()
 
+        self.selection_changed.emit(
+            self.current_item()
+        )
+
     def move_down(self):
 
         if not self.items:
@@ -224,6 +229,10 @@ class NavigationPanel(Panel):
         ) % len(self.items)
 
         self.update_selection()
+
+        self.selection_changed.emit(
+            self.current_item()
+        )
 
     def current_item(self):
 
@@ -245,6 +254,10 @@ class NavigationPanel(Panel):
             self.current_selection = index
 
             self.update_selection()
+
+            self.selection_changed.emit(
+                self.current_item()
+            )
 
     # ==========================================================
     # Activation

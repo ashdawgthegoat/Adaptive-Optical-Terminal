@@ -25,6 +25,10 @@ class DesktopApplication(ABC):
         """Content displayed inside the Context Panel."""
         raise NotImplementedError
 
+    def context_title(self) -> str:
+        """Title displayed by the Context Panel."""
+        return "CONTEXT"
+
     @abstractmethod
     def viewport(self):
         """Content displayed inside the Viewport."""

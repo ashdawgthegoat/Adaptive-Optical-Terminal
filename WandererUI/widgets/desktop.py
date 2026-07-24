@@ -57,7 +57,7 @@ class Desktop(QWidget):
             self.maaya
         )
 
-        self.overlay = Overlay()
+        self.overlay = Overlay(self)
 
         self.build_ui()
 
@@ -79,6 +79,10 @@ class Desktop(QWidget):
 
         self.navigation.activated.connect(
             self.activate_navigation_item
+        )
+
+        self.navigation.selection_changed.connect(
+            self.navigation_selection_changed
         )
 
         self.overlay.item_selected.connect(
@@ -183,10 +187,6 @@ class Desktop(QWidget):
             desktop_layout
         )
 
-        desktop_layout.addWidget(
-            self.overlay
-        )
-
     def activate_navigation_item(self, item):
         """Handle activation from the Navigation Panel."""
 
@@ -201,6 +201,16 @@ class Desktop(QWidget):
         self.application.activate(
             item
         )
+
+        self.refresh_application()
+
+    def navigation_selection_changed(self, item):
+        """Forward navigation selection changes to the active application."""
+
+        if not self.in_application():
+            return
+
+        self.application.selection_changed(item)
 
         self.refresh_application()
 
@@ -339,7 +349,7 @@ class Desktop(QWidget):
         if context is not None:
 
             self.context.set_title(
-                self.application.controller.current_page.upper()
+                self.application.context_title().upper()
             )
 
             self.context.set_properties(
@@ -459,6 +469,21 @@ class Desktop(QWidget):
             title,
             items
         )
+
+        x = (
+            self.width() - self.overlay.width()
+        ) // 2
+
+        y = (
+            self.height() - self.overlay.height()
+        ) // 2
+
+        self.overlay.move(
+            x,
+            y
+        )
+
+        self.overlay.raise_()
 
     def hide_overlay(self):
 

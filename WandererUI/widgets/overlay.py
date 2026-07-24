@@ -11,9 +11,9 @@ class Overlay(QWidget):
     item_selected = pyqtSignal(object)
     cancelled = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, parent=None):
 
-        super().__init__()
+        super().__init__(parent)
 
         self.items = []
         self.index = 0

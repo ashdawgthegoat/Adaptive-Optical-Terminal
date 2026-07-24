@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Settings
+Exec=true
+Type=Application
+Comment=WandererUI system settings
+Terminal=false
+
+X-Wanderer-Native=true
+X-Wanderer-Runtime=desktop
+X-Wanderer-Entry=apps.settings.application:create_application
