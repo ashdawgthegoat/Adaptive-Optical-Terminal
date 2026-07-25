@@ -33,53 +33,12 @@ _APPEARANCE = SectionInfo(
     properties=[
         PropertyInfo(
             name="Theme",
-            options=[
-                {"name": "Tokyo Night"},
-                {"name": "Catppuccin Mocha"},
-                {"name": "Nord"},
-                {"name": "Gruvbox Dark"},
-                {"name": "Rosé Pine"},
-                {"name": "Dracula"},
-                {"name": "One Dark"},
-                {"name": "Solarized Dark"},
-            ],
         ),
         PropertyInfo(
             name="Wallpaper",
-            options=[
-                {"name": "Midnight Gradient"},
-                {"name": "Aurora Borealis"},
-                {"name": "Deep Ocean"},
-                {"name": "Nebula"},
-                {"name": "Mountain Dusk"},
-                {"name": "Cosmic Dust"},
-            ],
         ),
         PropertyInfo(
             name="Font",
-            options=[
-                {"name": "Inter"},
-                {"name": "JetBrains Mono"},
-                {"name": "Fira Code"},
-                {"name": "IBM Plex Sans"},
-                {"name": "Outfit"},
-                {"name": "Space Grotesk"},
-                {"name": "Recursive"},
-                {"name": "Cascadia Code"},
-            ],
-        ),
-        PropertyInfo(
-            name="Accent",
-            options=[
-                {"name": "Blue", "value": "#7aa2f7"},
-                {"name": "Purple", "value": "#bb9af7"},
-                {"name": "Cyan", "value": "#7dcfff"},
-                {"name": "Green", "value": "#9ece6a"},
-                {"name": "Orange", "value": "#e0af68"},
-                {"name": "Pink", "value": "#ff007c"},
-                {"name": "Red", "value": "#f7768e"},
-                {"name": "Teal", "value": "#73daca"},
-            ],
         ),
     ],
 )

@@ -1,19 +1,23 @@
 from PyQt6.QtCore import Qt, pyqtSignal
 
-from PyQt6.QtWidgets import (
-    QWidget,
-    QLabel,
-    QVBoxLayout,
-)
+from PyQt6.QtWidgets import QLabel, QVBoxLayout
 
-class Overlay(QWidget):
+from widgets.layer.panel import Panel
+
+class Overlay(Panel):
 
     item_selected = pyqtSignal(object)
     cancelled = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(
+        self,
+        maaya,
+        parent=None):
 
-        super().__init__(parent)
+        super().__init__(
+            maaya,
+            show_border=True,
+            parent=parent)
 
         self.items = []
         self.index = 0
@@ -31,6 +35,19 @@ class Overlay(QWidget):
         self.list = QLabel()
 
         layout = QVBoxLayout()
+
+        layout.setContentsMargins(
+            20,
+            20,
+            20,
+            20
+        )
+
+        layout.setSpacing(12)
+
+        layout.setAlignment(
+            Qt.AlignmentFlag.AlignTop
+        )
 
         layout.addWidget(self.title)
         layout.addWidget(self.list)

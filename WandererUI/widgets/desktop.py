@@ -57,17 +57,14 @@ class Desktop(QWidget):
             self.maaya
         )
 
-        self.overlay = Overlay(self)
+        self.overlay = Overlay(
+            self.maaya,
+            parent=self
+        )
 
         self.build_ui()
 
-        self.set_navigation_items(
-            self.animus.list_applications()
-        )
-
-        self.viewport.show_wallpaper()
-
-        self.update_system_context()
+        self.restore_desktop_state()
 
         self.kaizen.focus_changed.connect(
             self.update_focus
@@ -296,6 +293,41 @@ class Desktop(QWidget):
 
         })
 
+    def restore_desktop_state(self):
+        """Restore the normal Wanderer desktop state."""
+
+        # Navigation
+        self.navigation.set_title(
+            "MAIN MENU"
+        )
+
+        self.set_navigation_items(
+            self.animus.list_applications()
+        )
+
+        # Viewport
+        self.viewport.set_title(
+            "VIEWPORT"
+        )
+
+        self.viewport.show_wallpaper()
+
+        # Context
+        self.context.set_title(
+            "SYSTEM STATUS"
+        )
+
+        self.update_system_context()
+
+        # Footer
+        self.footer.set_controls(
+            "←↑↓→ Navigate    ENTER Select"
+        )
+
+        self.footer.set_status(
+            "Ready."
+        )
+
     # ==========================================================
     # Desktop Application Management
     # ==========================================================
@@ -311,6 +343,10 @@ class Desktop(QWidget):
         )
         self.application_active = True
         self.context_timer.stop()
+
+        self.footer.set_status(
+            application.name().upper()
+        )
 
         # Navigation
 
@@ -370,8 +406,19 @@ class Desktop(QWidget):
                 preview
             )
 
+    def request_application_exit(self):
+        """Request permission to close the active application."""
+
+        if self.application is None:
+            return
+
+        if self.application.request_exit():
+            self.exit_application()
+
     def exit_application(self):
         """Return to the normal desktop."""
+
+        app_id = self.animus.active_application
 
         if self.application is not None:
             self.application.on_leave()
@@ -379,14 +426,18 @@ class Desktop(QWidget):
         self.application = None
         self.application_active = False
 
-        self.viewport.set_title(
-            "Viewport"
+        if app_id is not None:
+            self.animus.close(app_id)
+
+        # Restore normal desktop presentation
+        self.restore_desktop_state()
+
+        # Restore desktop focus
+        self.kaizen.set_focus(
+            "navigation"
         )
 
-        self.navigation.set_title(
-            "Applications"
-        )
-
+        # Resume desktop context updates
         self.context_timer.start(1000)
 
 

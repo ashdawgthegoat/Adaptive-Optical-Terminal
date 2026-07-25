@@ -1,166 +1,169 @@
 import json
-import uuid
-from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 
 class Eidolon:
+    """
+    Persistent system-state service for WandererUI.
 
-    ROOT = Path.home() / "Wanderer"
+    Eidolon remembers configuration and state across UI sessions.
+    It does not apply that state itself; other services remain
+    responsible for interpreting and acting on their own state.
+    """
 
-    @classmethod
-    def create_observation(
-        cls,
-        category,
-        name
-    ):
+    ROOT = Path.home() / ".config" / "wanderer"
+    STATE_FILE = ROOT / "state.json"
 
-        observation_path = (
-            cls.ROOT /
-            category /
-            name
-        )
+    def __init__(self):
 
-        if observation_path.exists():
-            return False
+        self._state: dict[str, Any] = {}
 
-        observation_path.mkdir(
-            parents=True
-        )
+        self.load()
 
-        (
-            observation_path /
-            "media"
-        ).mkdir()
+    # =====================================================
+    # Persistence
+    # =====================================================
 
-        (
-            observation_path /
-            "metadata"
-        ).mkdir()
+    def load(self) -> None:
+        """Load persisted Wanderer state from disk."""
 
-        (
-            observation_path /
-            "exports"
-        ).mkdir()
+        if not self.STATE_FILE.exists():
+            self._state = {}
+            return
 
-        (
-            observation_path /
-            "notes.md"
-        ).touch()
+        try:
+            with self.STATE_FILE.open(
+                "r",
+                encoding="utf-8"
+            ) as file:
+                data = json.load(file)
 
-        observation = {
+        except (
+            OSError,
+            json.JSONDecodeError
+        ):
+            self._state = {}
+            return
 
-            "id": str(uuid.uuid4()),
+        if isinstance(data, dict):
+            self._state = data
+        else:
+            self._state = {}
 
-            "name": name,
+    def save(self) -> bool:
+        """Persist the current Wanderer state to disk."""
 
-            "category": category,
-
-            "created": datetime.now().isoformat(),
-
-            "last_modified": datetime.now().isoformat()
-
-        }
-
-        with open(
-
-            observation_path /
-            "observation.json",
-
-            "w"
-
-        ) as file:
-
-            json.dump(
-
-                observation,
-
-                file,
-
-                indent=4
-
+        try:
+            self.ROOT.mkdir(
+                parents=True,
+                exist_ok=True
             )
 
-        return True
-    
-    @classmethod
-    def get_observations(
-        cls,
-        category
-    ):
-
-        category_path = (
-            cls.ROOT /
-            category
-        )
-
-        if not category_path.exists():
-            return []
-
-        observations = []
-
-        for item in sorted(
-            category_path.iterdir()
-        ):
-
-            if item.is_dir():
-
-                observations.append(
-                    item.name
-                )
-
-        return observations
-
-    @classmethod
-    def open_observation(
-        cls,
-        category,
-        name
-    ):
-
-        observation_path = (
-            cls.ROOT /
-            category /
-            name
-        )
-
-        json_path = (
-            observation_path /
-            "observation.json"
-        )
-
-        notes_path = (
-            observation_path /
-            "notes.md"
-        )
-
-        if not json_path.exists():
-            return None
-
-        with open(
-            json_path,
-            "r"
-        ) as file:
-
-            observation = json.load(file)
-
-        if notes_path.exists():
-
-            with open(
-                notes_path,
-                "r"
+            with self.STATE_FILE.open(
+                "w",
+                encoding="utf-8"
             ) as file:
-
-                observation["notes"] = (
-                    file.read()
+                json.dump(
+                    self._state,
+                    file,
+                    indent=4
                 )
 
-        else:
+        except OSError:
+            return False
 
-            observation["notes"] = ""
+        return True
 
-        observation["root"] = (
-            str(observation_path)
+    # =====================================================
+    # State Access
+    # =====================================================
+
+    def get(
+        self,
+        section: str,
+        key: str,
+        default=None
+    ):
+        """Return a value from a state section."""
+
+        section_state = self._state.get(
+            section,
+            {}
         )
 
-        return observation
+        if not isinstance(section_state, dict):
+            return default
+
+        return section_state.get(
+            key,
+            default
+        )
+
+    def set(
+        self,
+        section: str,
+        key: str,
+        value
+    ) -> None:
+        """Set a value in a state section."""
+
+        section_state = self._state.setdefault(
+            section,
+            {}
+        )
+
+        if not isinstance(section_state, dict):
+            section_state = {}
+            self._state[section] = section_state
+
+        section_state[key] = value
+
+    # =====================================================
+    # Section Access
+    # =====================================================
+
+    def get_section(
+        self,
+        section: str
+    ) -> dict:
+        """Return a copy of an entire state section."""
+
+        section_state = self._state.get(
+            section,
+            {}
+        )
+
+        if not isinstance(section_state, dict):
+            return {}
+
+        return dict(section_state)
+
+    def set_section(
+        self,
+        section: str,
+        values: dict
+    ) -> None:
+        """Replace an entire state section."""
+
+        self._state[section] = dict(values)
+
+    # =====================================================
+    # Maintenance
+    # =====================================================
+
+    def clear_section(
+        self,
+        section: str
+    ) -> None:
+        """Remove an entire state section."""
+
+        self._state.pop(
+            section,
+            None
+        )
+
+    def clear(self) -> None:
+        """Clear all in-memory state."""
+
+        self._state.clear()

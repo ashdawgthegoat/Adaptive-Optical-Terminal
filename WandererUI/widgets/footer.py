@@ -22,8 +22,8 @@ class Footer(Panel):
     def __init__(
         self,
         maaya,
-        controls="↑↓ Navigate    ENTER Select    ESC Back",
-        status="Ready."
+        controls="",
+        status=""
     ):
 
         super().__init__(

@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
 from services.maaya import Maaya
 from services.kaizen import Kaizen
 from services.animus import Animus
+from services.eidolon import Eidolon
 
 from widgets.desktop import Desktop
 
@@ -36,26 +37,52 @@ class MainWindow(QMainWindow):
         # Core Services
         # ==================================================
 
+        self.eidolon = Eidolon()
         self.maaya = Maaya()
 
         # --------------------------------------------------
-        # Temporary default presentation package
-        # Will later be restored by Eidolon / Settings
+        # Restore presentation state
         # --------------------------------------------------
 
-        self.maaya.load_theme("classic")
-        self.maaya.load_font("system")
-        wallpapers = self.maaya.available_wallpapers(
-            "static"
+        theme = self.eidolon.get(
+            "appearance",
+            "theme",
+            "classic"
         )
 
-        if wallpapers:
+        font = self.eidolon.get(
+            "appearance",
+            "font",
+            "system"
+        )
+
+        wallpaper = self.eidolon.get(
+            "appearance",
+            "wallpaper"
+        )
+
+        self.maaya.load_theme(theme)
+        self.maaya.load_font(font)
+
+        if wallpaper:
 
             self.maaya.load_wallpaper(
-                "static",
-                wallpapers[0]
+                wallpaper.get("category", "static"),
+                wallpaper.get("filename", "")
             )
 
+        else:
+
+            wallpapers = self.maaya.available_wallpapers(
+                "static"
+            )
+
+            if wallpapers:
+
+                self.maaya.load_wallpaper(
+                    "static",
+                    wallpapers[0]
+                )
         self.animus = Animus(
             development_mode=True
         )
@@ -124,7 +151,7 @@ class MainWindow(QMainWindow):
 
             elif key == Qt.Key.Key_Escape:
 
-                self.desktop.hide_overlay()
+                self.desktop.overlay.cancel()
 
                 return
 
@@ -179,6 +206,23 @@ class MainWindow(QMainWindow):
 
                     panel.activate()
 
+            elif key == Qt.Key.Key_Escape:
+
+                if self.kaizen.has_focus("context"):
+
+                    self.kaizen.set_focus(
+                        "navigation"
+                    )
+
+                elif (
+                    self.kaizen.has_focus("navigation")
+                    and self.desktop.in_application()
+                ):
+
+                    self.desktop.request_application_exit()
+
+                return
+
         else:
 
             if key == Qt.Key.Key_Left:
@@ -206,11 +250,18 @@ class MainWindow(QMainWindow):
 
         print("[3] desktop_launch_requested")
 
-        desktop_application = (
-            self.animus.create_desktop_application(
-                application,
-                self.maaya
+        factory = (
+            self.animus.get_desktop_application_factory(
+                application
             )
+        )
+
+        if factory is None:
+            return
+
+        desktop_application = factory(
+            self.maaya,
+            self.eidolon
         )
 
         if desktop_application is None:

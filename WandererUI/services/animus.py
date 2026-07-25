@@ -78,9 +78,10 @@ class Animus(QObject):
 
         self.applications_changed.emit()
 
-    def create_desktop_application(self, application, maaya):
+    def get_desktop_application_factory(self, application):
         """
-        Create a Desktop Application from its entry point.
+        Resolve a Desktop Application factory
+        from its entry point.
         """
 
         entry = application.get("entry", "")
@@ -101,12 +102,12 @@ class Animus(QObject):
                 factory_name
             )
 
-            return factory(maaya)
+            return factory
 
         except Exception as error:
 
             print(
-                f"[Animus] Failed to create "
+                f"[Animus] Failed to resolve "
                 f"{application['name']}: {error}"
             )
 

@@ -54,3 +54,12 @@ class DesktopApplication(ABC):
     def on_leave(self) -> None:
         """Called before the application is closed."""
         pass
+
+    def request_exit(self) -> bool:
+        """
+        Called when the user requests to leave the application.
+
+        Return True to allow the Desktop to close the application.
+        Return False if the application wants to handle the exit itself.
+        """
+        return True

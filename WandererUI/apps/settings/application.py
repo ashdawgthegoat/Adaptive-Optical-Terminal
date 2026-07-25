@@ -9,12 +9,23 @@ from apps.settings.preview.placeholder_preview import PlaceholderPreview
 
 class SettingsApplication(DesktopApplication):
 
-    def __init__(self):
+    def __init__(
+        self, 
+        maaya,
+        eidolon
+    ):
         self.desktop = None
+
+        self.maaya = maaya
+        self.eidolon = eidolon
 
         self.current_section = SECTIONS[0]
 
+        self.current_property = None
+
         self.staged_settings = StagedSettings()
+
+        self.initialize_appearance_state()
 
         self.theme_preview = ThemePreview()
 
@@ -33,6 +44,44 @@ class SettingsApplication(DesktopApplication):
             preview.set_section(section, icon)
 
             self.placeholder_previews[section] = preview
+
+    def initialize_appearance_state(self):
+
+        # Theme
+        if self.maaya.theme is not None:
+            theme = self.maaya.theme.__name__.split(".")[-1]
+
+            self.staged_settings.set_committed(
+                "Appearance",
+                "Theme",
+                theme
+            )
+
+        # Font
+        if self.maaya.font is not None:
+            font = self.maaya.font.get(
+                "package",
+                ""
+            )
+
+            self.staged_settings.set_committed(
+                "Appearance",
+                "Font",
+                font
+            )
+
+        # Wallpaper
+        if self.maaya.wallpaper is not None:
+            wallpaper = self.maaya.wallpaper.get(
+                "filename",
+                ""
+            )
+
+            self.staged_settings.set_committed(
+                "Appearance",
+                "Wallpaper",
+                wallpaper
+            )
 
     def context_title(self) -> str:
         return self.current_section
@@ -91,6 +140,100 @@ class SettingsApplication(DesktopApplication):
     def on_enter(self) -> None:
         pass
 
+    def request_exit(self) -> bool:
+
+        if not self.staged_settings.has_staged_changes():
+            return True
+
+        self.desktop.show_overlay(
+            "UNAPPLIED CHANGES",
+            [
+                {"name": "Apply"},
+                {"name": "Discard"},
+                {"name": "Cancel"},
+            ],
+            self.exit_option_selected
+        )
+
+        return False
+
+    def exit_option_selected(self, value):
+
+        if isinstance(value, dict):
+            choice = value["name"]
+        else:
+            choice = value
+
+        if choice == "Cancel":
+            return
+
+        if choice == "Discard":
+            self.staged_settings.discard()
+            self.desktop.exit_application()
+            return
+
+        if choice == "Apply":
+            self.apply_changes()
+
+    def apply_changes(self):
+
+        changes = self.staged_settings.get_all_staged()
+
+        for (section, prop), value in changes.items():
+
+            if section != "Appearance":
+                continue
+
+            if prop == "Theme":
+
+                self.maaya.load_theme(value)
+                self.desktop.refresh("theme")
+
+                self.eidolon.set(
+                    "appearance",
+                    "theme",
+                    value
+                )
+
+            elif prop == "Font":
+
+                self.maaya.load_font(value)
+                self.desktop.refresh("font")
+
+                self.eidolon.set(
+                    "appearance",
+                    "font",
+                    value
+                )
+
+            elif prop == "Wallpaper":
+
+                self.maaya.load_wallpaper(
+                    "static",
+                    value
+                )
+                self.desktop.refresh("wallpaper")
+
+                self.eidolon.set(
+                    "appearance",
+                    "wallpaper",
+                    {
+                        "category": "static",
+                        "filename": value
+                    }
+                )
+
+        if not self.eidolon.save():
+            print(
+                "[Settings] Failed to persist "
+                "state through Eidolon."
+            )
+            return
+
+        self.staged_settings.commit()
+
+        self.desktop.exit_application()
+
     def on_leave(self) -> None:
         pass
 
@@ -102,6 +245,28 @@ class SettingsApplication(DesktopApplication):
 
         if self.desktop is not None:
             self.desktop.kaizen.set_focus("context")
+
+    def appearance_options(self, property_name):
+
+        if property_name == "Theme":
+            return [
+                {"name": theme}
+                for theme in self.maaya.available_themes()
+            ]
+
+        if property_name == "Font":
+            return [
+                {"name": font}
+                for font in self.maaya.available_fonts()
+            ]
+
+        if property_name == "Wallpaper":
+            return [
+                {"name": wallpaper}
+                for wallpaper in self.maaya.available_wallpapers()
+            ]
+
+        return []
 
     def activate_property(self, property_name):
 
@@ -116,20 +281,51 @@ class SettingsApplication(DesktopApplication):
             None
         )
 
-        if prop is None or not prop.options:
+        if prop is None:
             return
+
+        if self.current_section == "Appearance":
+            options = self.appearance_options(
+                property_name
+            )
+        else:
+            options = prop.options
+
+        if not options:
+            return
+
+        self.current_property = property_name
 
         self.desktop.show_overlay(
             property_name.upper(),
-            prop.options,
+            options,
             self.option_selected
         )
 
     def option_selected(self, value):
 
-        print(
-            f"[Settings] selected option: {value}"
+        if self.current_property is None:
+            return
+
+        if isinstance(value, dict):
+            selected_value = value["name"]
+        else:
+            selected_value = value
+
+        self.staged_settings.stage(
+            self.current_section,
+            self.current_property,
+            selected_value
         )
 
-def create_application(maaya):
-    return SettingsApplication()
+        if self.desktop is not None:
+            self.desktop.refresh_application()
+
+def create_application(
+    maaya,
+    eidolon
+):
+    return SettingsApplication(
+        maaya,
+        eidolon
+    )

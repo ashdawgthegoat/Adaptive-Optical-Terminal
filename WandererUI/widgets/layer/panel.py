@@ -19,10 +19,11 @@ class Panel(QFrame):
     def __init__(
         self,
         maaya,
-        show_border=True
+        show_border=True,
+        parent=None
     ):
 
-        super().__init__()
+        super().__init__(parent)
 
         self.maaya = maaya
 

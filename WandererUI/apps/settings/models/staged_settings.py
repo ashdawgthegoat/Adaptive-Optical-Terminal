@@ -31,32 +31,6 @@ class StagedSettings(QObject):
         self._committed: dict[tuple[str, str], str] = {}
         self._staged: dict[tuple[str, str], str] = {}
 
-        self._init_defaults()
-
-    # --------------------------------------------------------------------- #
-    # Default values
-    # --------------------------------------------------------------------- #
-
-    def _init_defaults(self) -> None:
-        """Populate committed values with sensible defaults."""
-        defaults: dict[tuple[str, str], str] = {
-            ("Appearance", "Theme"): "Tokyo Night",
-            ("Appearance", "Wallpaper"): "Midnight Gradient",
-            ("Appearance", "Font"): "Inter",
-            ("Appearance", "Accent"): "Blue",
-            ("Wi-Fi", "Network"): "Home Network",
-            ("Wi-Fi", "Status"): "Connected",
-            ("Bluetooth", "Devices"): "Headphones",
-            ("Bluetooth", "Status"): "On",
-            ("Audio", "Output Device"): "Built-in Speakers",
-            ("Audio", "Volume"): "75%",
-            ("Modules", "Installed"): "3 Modules",
-            ("Modules", "Available"): "12 Modules",
-            ("About", "Version"): "1.0.0",
-            ("About", "System"): "Linux x86_64",
-        }
-        self._committed.update(defaults)
-
     # --------------------------------------------------------------------- #
     # Read access
     # --------------------------------------------------------------------- #
@@ -79,6 +53,16 @@ class StagedSettings(QObject):
     # --------------------------------------------------------------------- #
     # Write access
     # --------------------------------------------------------------------- #
+
+    def set_committed(
+        self,
+        section: str,
+        prop: str,
+        value: str
+    ) -> None:
+        """Set the committed value for a setting."""
+
+        self._committed[(section, prop)] = value
 
     def stage(self, section: str, prop: str, value: str) -> None:
         """Stage a new value.  If it matches the committed value, un-stage."""
