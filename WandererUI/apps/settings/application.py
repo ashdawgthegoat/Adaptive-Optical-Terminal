@@ -12,12 +12,14 @@ class SettingsApplication(DesktopApplication):
     def __init__(
         self, 
         maaya,
-        eidolon
+        eidolon,
+        nikola=None
     ):
         self.desktop = None
 
         self.maaya = maaya
         self.eidolon = eidolon
+        self.nikola = nikola
 
         self.current_section = SECTIONS[0]
 
@@ -107,7 +109,26 @@ class SettingsApplication(DesktopApplication):
         ]
 
     def context(self):
+
         section = SECTION_REGISTRY[self.current_section]
+
+        if (
+            self.current_section == "Wi-Fi"
+            and self.nikola is not None
+        ):
+
+            enabled = self.nikola.wifi_enabled()
+
+            network = (
+                self.nikola.current_network()
+                if enabled
+                else None
+            )
+
+            return {
+                "Wi-Fi": "On" if enabled else "Off",
+                "Network": network or "Disconnected",
+            }
 
         return {
             prop.name: self.staged_settings.get_effective(
@@ -274,6 +295,54 @@ class SettingsApplication(DesktopApplication):
 
         return []
 
+    def wifi_options(self, property_name):
+
+        if self.nikola is None:
+            return []
+
+        if property_name == "Wi-Fi":
+            return [
+                {"name": "On"},
+                {"name": "Off"},
+            ]
+
+        if property_name == "Network":
+
+            if not self.nikola.wifi_enabled():
+                return [
+                    {"name": "Wi-Fi is Off"}
+                ]
+
+            networks = self.nikola.available_networks()
+
+            options = []
+
+            for network in networks:
+
+                ssid = network["ssid"]
+                strength = network["strength"]
+                secured = network["secured"]
+                connected = network["connected"]
+
+                marker = "●" if connected else " "
+
+                security = "🔒" if secured else ""
+
+                options.append({
+                   "name": (
+                        f"{marker} {ssid}    "
+                        f"{strength}% {security}"
+                    )
+                })
+
+            if not options:
+                return [
+                    {"name": "No Networks Found"}
+                ]
+
+            return options
+
+        return []
     def activate_property(self, property_name):
 
         section = SECTION_REGISTRY[self.current_section]
@@ -291,10 +360,19 @@ class SettingsApplication(DesktopApplication):
             return
 
         if self.current_section == "Appearance":
+
             options = self.appearance_options(
                 property_name
             )
+
+        elif self.current_section == "Wi-Fi":
+
+            options = self.wifi_options(
+                property_name
+            )
+
         else:
+
             options = prop.options
 
         if not options:
@@ -318,6 +396,30 @@ class SettingsApplication(DesktopApplication):
         else:
             selected_value = value
 
+        if self.current_section == "Wi-Fi":
+
+            if self.nikola is None:
+                return
+
+            if self.current_property == "Wi-Fi":
+
+                enabled = selected_value == "On"
+
+                if not self.nikola.set_wifi_enabled(enabled):
+                    print(
+                        "[Settings] Failed to change "
+                        "Wi-Fi state."
+                    )
+                    return
+
+                if self.desktop is not None:
+                    self.desktop.refresh_application()
+
+                return
+            
+            if self.current_property == "Network":
+                return
+
         self.staged_settings.stage(
             self.current_section,
             self.current_property,
@@ -329,9 +431,14 @@ class SettingsApplication(DesktopApplication):
 
 def create_application(
     maaya,
-    eidolon
+    eidolon,
+    services=None
 ):
+
+    services = services or {}
+
     return SettingsApplication(
         maaya,
-        eidolon
+        eidolon,
+        nikola=services.get("nikola")
     )

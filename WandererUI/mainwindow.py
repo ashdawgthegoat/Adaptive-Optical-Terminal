@@ -11,6 +11,7 @@ from services.maaya import Maaya
 from services.kaizen import Kaizen
 from services.animus import Animus
 from services.eidolon import Eidolon
+from services.nikola import Nikola
 
 from widgets.desktop import Desktop
 
@@ -39,6 +40,7 @@ class MainWindow(QMainWindow):
 
         self.eidolon = Eidolon()
         self.maaya = Maaya()
+        self.nikola = Nikola()
 
         # --------------------------------------------------
         # Restore presentation state
@@ -261,7 +263,10 @@ class MainWindow(QMainWindow):
 
         desktop_application = factory(
             self.maaya,
-            self.eidolon
+            self.eidolon,
+            services={
+                "nikola": self.nikola,
+            }
         )
 
         if desktop_application is None:

@@ -48,20 +48,10 @@ _WIFI = SectionInfo(
     icon="\U0001f4f6",  # 📶
     properties=[
         PropertyInfo(
-            name="Network",
-            options=[
-                {"name": "Home Network"},
-                {"name": "Office 5G"},
-                {"name": "Guest Network"},
-                {"name": "Mobile Hotspot"},
-            ],
+            name="Wi-Fi",
         ),
         PropertyInfo(
-            name="Status",
-            options=[
-                {"name": "Connected"},
-                {"name": "Disconnected"},
-            ],
+            name="Network",
         ),
     ],
 )
