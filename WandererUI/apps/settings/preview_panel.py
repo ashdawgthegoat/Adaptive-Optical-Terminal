@@ -68,9 +68,6 @@ class PreviewPanel(QWidget):
         self._current_property = "Theme"
         self._staged_settings: StagedSettings | None = None
 
-        # Style
-        self.setStyleSheet("background-color: #1a1b26;")
-
     # ------------------------------------------------------------------ #
     # Public API
     # ------------------------------------------------------------------ #

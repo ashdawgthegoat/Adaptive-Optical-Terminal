@@ -1,149 +1,540 @@
 """
-Typography specimen preview for font selection.
+Font preview for Wanderer Settings.
 
-Renders the selected font at multiple sizes with a character set display
-and a pangram, giving a clear impression of how the font looks.
+Renders the staged font package as a miniature Wanderer typography
+specimen without mutating Maaya's live presentation state.
 """
 
 from __future__ import annotations
 
+from pathlib import Path
+import importlib.util
+
 from PyQt6.QtCore import QRectF, Qt
-from PyQt6.QtGui import QColor, QFont, QPainter
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtGui import QColor, QFont, QFontDatabase, QPainter
+from PyQt6.QtWidgets import QSizePolicy, QWidget
 
 
 class FontPreview(QWidget):
-    """Displays a typography specimen for the selected font."""
+    """Displays the staged font using Wanderer's typography hierarchy."""
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        parent: QWidget | None = None
+    ) -> None:
+
         super().__init__(parent)
-        self._font_name = "Inter"
-        self.setMinimumSize(300, 300)
-        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-    def set_font(self, font_name: str) -> None:
-        self._font_name = font_name
+        self.setFocusPolicy(
+            Qt.FocusPolicy.NoFocus
+        )
+
+        self.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding
+        )
+
+        self._assets_root = Path("assets/fonts")
+
+        self._font_package = ""
+        self._font_family = "monospace"
+
+        self._typography = {
+            "title": 20,
+            "section": 14,
+            "body": 12,
+            "footer": 11,
+            "mono": 12,
+        }
+
+        # Keep successfully resolved packages cached so repeatedly moving
+        # through Settings does not reload the same font file unnecessarily.
+        self._font_cache: dict[str, tuple[str, dict[str, int]]] = {}
+
+    # ============================================================
+    # Public API
+    # ============================================================
+
+    def set_font(
+        self,
+        font_package: str
+    ) -> None:
+        """Preview a staged font package without changing Maaya."""
+
+        if not font_package:
+            return
+
+        self._font_package = font_package
+
+        family, typography = self._resolve_font(
+            font_package
+        )
+
+        self._font_family = family
+        self._typography = typography
+
         self.update()
 
-    # ------------------------------------------------------------------ #
-    # Painting
-    # ------------------------------------------------------------------ #
+    # ============================================================
+    # Font resolution
+    # ============================================================
 
-    def paintEvent(self, _event) -> None:  # noqa: N802
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setRenderHint(QPainter.RenderHint.TextAntialiasing)
+    def _resolve_font(
+        self,
+        package: str
+    ) -> tuple[str, dict[str, int]]:
 
-        w, h = self.width(), self.height()
-        bg = QColor("#1a1b26")
-        text_primary = QColor("#c0caf5")
-        text_muted = QColor("#565f89")
-        accent = QColor("#7aa2f7")
-        surface = QColor("#24283b")
+        if package in self._font_cache:
+            return self._font_cache[package]
 
-        painter.fillRect(0, 0, w, h, bg)
+        default_typography = {
+            "title": 20,
+            "section": 14,
+            "body": 12,
+            "footer": 11,
+            "mono": 12,
+        }
 
-        pad = 28
-        y_cursor = float(pad)
-        content_w = w - pad * 2
-
-        # ---- Font name heading ---- #
-        heading_font = QFont(self._font_name, 28)
-        heading_font.setWeight(QFont.Weight.Bold)
-        painter.setFont(heading_font)
-        painter.setPen(accent)
-        fm = painter.fontMetrics()
-        painter.drawText(
-            QRectF(pad, y_cursor, content_w, fm.height() + 4),
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
-            self._font_name,
+        folder = (
+            self._assets_root
+            / package
         )
-        y_cursor += fm.height() + 16
 
-        # Divider
+        if not folder.exists():
+
+            result = (
+                package,
+                default_typography
+            )
+
+            self._font_cache[package] = result
+
+            return result
+
+        # --------------------------------------------------------
+        # Resolve font family
+        # --------------------------------------------------------
+
+        font_file = next(
+            (
+                file
+                for file in folder.iterdir()
+                if (
+                    file.is_file()
+                    and file.suffix.lower()
+                    in {".ttf", ".otf"}
+                )
+            ),
+            None
+        )
+
+        family = package
+
+        if font_file is not None:
+
+            font_id = (
+                QFontDatabase.addApplicationFont(
+                    str(font_file)
+                )
+            )
+
+            if font_id != -1:
+
+                families = (
+                    QFontDatabase.applicationFontFamilies(
+                        font_id
+                    )
+                )
+
+                if families:
+                    family = families[0]
+
+        # --------------------------------------------------------
+        # Resolve optional package typography
+        # --------------------------------------------------------
+
+        typography = default_typography.copy()
+
+        typography_file = (
+            folder
+            / "typography.py"
+        )
+
+        if typography_file.exists():
+
+            try:
+
+                spec = (
+                    importlib.util.spec_from_file_location(
+                        f"settings_preview_fonts."
+                        f"{package}.typography",
+                        typography_file
+                    )
+                )
+
+                if (
+                    spec is not None
+                    and spec.loader is not None
+                ):
+
+                    module = (
+                        importlib.util.module_from_spec(
+                            spec
+                        )
+                    )
+
+                    spec.loader.exec_module(
+                        module
+                    )
+
+                    typography_class = getattr(
+                        module,
+                        "Typography",
+                        None
+                    )
+
+                    if typography_class is not None:
+
+                        typography = {
+                            "title": getattr(
+                                typography_class,
+                                "TITLE_SIZE",
+                                20
+                            ),
+                            "section": getattr(
+                                typography_class,
+                                "SECTION_SIZE",
+                                14
+                            ),
+                            "body": getattr(
+                                typography_class,
+                                "BODY_SIZE",
+                                12
+                            ),
+                            "footer": getattr(
+                                typography_class,
+                                "FOOTER_SIZE",
+                                11
+                            ),
+                            "mono": getattr(
+                                typography_class,
+                                "MONO_SIZE",
+                                12
+                            ),
+                        }
+
+            except Exception:
+                # A broken optional typography file should not take
+                # Settings down with it. Fall back to Wanderer defaults.
+                typography = default_typography.copy()
+
+        result = (
+            family,
+            typography
+        )
+
+        self._font_cache[package] = result
+
+        return result
+
+    # ============================================================
+    # Painting
+    # ============================================================
+
+    def paintEvent(
+        self,
+        _event
+    ) -> None:
+
+        painter = QPainter(self)
+
+        painter.setRenderHint(
+            QPainter.RenderHint.Antialiasing
+        )
+
+        painter.setRenderHint(
+            QPainter.RenderHint.TextAntialiasing
+        )
+
+        width = self.width()
+        height = self.height()
+
+        # Temporary preview palette.
+        #
+        # ThemePreview will later establish the shared staged-theme
+        # presentation contract for Settings.
+        primary = QColor("#c0caf5")
+        muted = QColor("#565f89")
+        accent = QColor("#7aa2f7")
+        divider = QColor("#3b4261")
+
+        horizontal_pad = max(
+            36,
+            int(width * 0.07)
+        )
+
+        vertical_pad = max(
+            36,
+            int(height * 0.07)
+        )
+
+        content_width = (
+            width
+            - (horizontal_pad * 2)
+        )
+
+        y = float(vertical_pad)
+
+        # --------------------------------------------------------
+        # Wanderer title
+        # --------------------------------------------------------
+
+        title_font = self._make_font(
+            self._typography["title"],
+            QFont.Weight.Bold
+        )
+
+        painter.setFont(title_font)
+        painter.setPen(accent)
+
+        title_metrics = painter.fontMetrics()
+
+        painter.drawText(
+            QRectF(
+                horizontal_pad,
+                y,
+                content_width,
+                title_metrics.height()
+            ),
+            Qt.AlignmentFlag.AlignLeft
+            | Qt.AlignmentFlag.AlignVCenter,
+            "WANDERER"
+        )
+
+        y += title_metrics.height() + 18
+
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor("#3b4261"))
-        painter.drawRect(QRectF(pad, y_cursor, content_w, 1))
-        y_cursor += 16
+        painter.setBrush(divider)
 
-        # ---- Uppercase ---- #
-        label_font = QFont("Inter", 9)
+        painter.drawRect(
+            QRectF(
+                horizontal_pad,
+                y,
+                content_width,
+                1
+            )
+        )
+
+        y += 28
+
+        # --------------------------------------------------------
+        # Section typography
+        # --------------------------------------------------------
+
+        section_font = self._make_font(
+            self._typography["section"],
+            QFont.Weight.Bold
+        )
+
+        painter.setFont(section_font)
+        painter.setPen(primary)
+
+        section_metrics = painter.fontMetrics()
+
+        painter.drawText(
+            QRectF(
+                horizontal_pad,
+                y,
+                content_width,
+                section_metrics.height()
+            ),
+            Qt.AlignmentFlag.AlignLeft
+            | Qt.AlignmentFlag.AlignVCenter,
+            "APPEARANCE"
+        )
+
+        y += section_metrics.height() + 22
+
+        # --------------------------------------------------------
+        # Body typography
+        # --------------------------------------------------------
+
+        body_font = self._make_font(
+            self._typography["body"]
+        )
+
+        painter.setFont(body_font)
+        painter.setPen(primary)
+
+        body_metrics = painter.fontMetrics()
+
+        body_text = (
+            "The quick brown fox jumps over the lazy dog.\n"
+            "Pack my box with five dozen liquor jugs."
+        )
+
+        body_height = (
+            body_metrics.lineSpacing() * 2
+            + 8
+        )
+
+        painter.drawText(
+            QRectF(
+                horizontal_pad,
+                y,
+                content_width,
+                body_height
+            ),
+            Qt.AlignmentFlag.AlignLeft
+            | Qt.AlignmentFlag.AlignTop,
+            body_text
+        )
+
+        y += body_height + 30
+
+        # --------------------------------------------------------
+        # Character specimen
+        # --------------------------------------------------------
+
+        label_font = self._make_font(
+            self._typography["footer"]
+        )
+
         painter.setFont(label_font)
-        painter.setPen(text_muted)
-        painter.drawText(QRectF(pad, y_cursor, content_w, 14), Qt.AlignmentFlag.AlignLeft, "UPPERCASE")
-        y_cursor += 18
+        painter.setPen(muted)
 
-        alpha_font = QFont(self._font_name, 16)
-        painter.setFont(alpha_font)
-        painter.setPen(text_primary)
-        fm = painter.fontMetrics()
-        upper_text = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
-        br = fm.boundingRect(QRectF(pad, y_cursor, content_w, 100).toRect(),
-                             Qt.TextFlag.TextWordWrap, upper_text)
-        painter.drawText(QRectF(pad, y_cursor, content_w, br.height() + 4),
-                         Qt.TextFlag.TextWordWrap, upper_text)
-        y_cursor += br.height() + 16
+        label_metrics = painter.fontMetrics()
 
-        # ---- Lowercase ---- #
+        painter.drawText(
+            QRectF(
+                horizontal_pad,
+                y,
+                content_width,
+                label_metrics.height()
+            ),
+            Qt.AlignmentFlag.AlignLeft,
+            "CHARACTER SET"
+        )
+
+        y += label_metrics.height() + 12
+
+        painter.setFont(body_font)
+        painter.setPen(primary)
+
+        character_lines = (
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ\n"
+            "abcdefghijklmnopqrstuvwxyz\n"
+            "0123456789"
+        )
+
+        character_height = (
+            body_metrics.lineSpacing() * 3
+            + 8
+        )
+
+        painter.drawText(
+            QRectF(
+                horizontal_pad,
+                y,
+                content_width,
+                character_height
+            ),
+            Qt.AlignmentFlag.AlignLeft
+            | Qt.AlignmentFlag.AlignTop,
+            character_lines
+        )
+
+        y += character_height + 30
+
+        # --------------------------------------------------------
+        # Navigation / mono specimen
+        # --------------------------------------------------------
+
         painter.setFont(label_font)
-        painter.setPen(text_muted)
-        painter.drawText(QRectF(pad, y_cursor, content_w, 14), Qt.AlignmentFlag.AlignLeft, "LOWERCASE")
-        y_cursor += 18
+        painter.setPen(muted)
 
-        painter.setFont(alpha_font)
-        painter.setPen(text_primary)
-        lower_text = "a b c d e f g h i j k l m n o p q r s t u v w x y z"
-        br = fm.boundingRect(QRectF(pad, y_cursor, content_w, 100).toRect(),
-                             Qt.TextFlag.TextWordWrap, lower_text)
-        painter.drawText(QRectF(pad, y_cursor, content_w, br.height() + 4),
-                         Qt.TextFlag.TextWordWrap, lower_text)
-        y_cursor += br.height() + 16
+        painter.drawText(
+            QRectF(
+                horizontal_pad,
+                y,
+                content_width,
+                label_metrics.height()
+            ),
+            Qt.AlignmentFlag.AlignLeft,
+            "NAVIGATION"
+        )
 
-        # ---- Numbers ---- #
-        painter.setFont(label_font)
-        painter.setPen(text_muted)
-        painter.drawText(QRectF(pad, y_cursor, content_w, 14), Qt.AlignmentFlag.AlignLeft, "NUMERALS")
-        y_cursor += 18
+        y += label_metrics.height() + 12
 
-        painter.setFont(alpha_font)
-        painter.setPen(text_primary)
-        painter.drawText(QRectF(pad, y_cursor, content_w, fm.height() + 4),
-                         Qt.AlignmentFlag.AlignLeft, "0 1 2 3 4 5 6 7 8 9")
-        y_cursor += fm.height() + 20
+        mono_font = self._make_font(
+            self._typography["mono"]
+        )
 
-        # ---- Divider ---- #
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor("#3b4261"))
-        painter.drawRect(QRectF(pad, y_cursor, content_w, 1))
-        y_cursor += 16
+        mono_font.setStyleHint(
+            QFont.StyleHint.Monospace
+        )
 
-        # ---- Pangram at multiple sizes ---- #
-        pangram = "The quick brown fox jumps over the lazy dog"
-        sizes = [
-            ("36px", 24),
-            ("24px", 18),
-            ("16px", 13),
-            ("12px", 10),
-        ]
+        painter.setFont(mono_font)
+        painter.setPen(primary)
 
-        for label, size in sizes:
-            if y_cursor > h - 30:
-                break
-            # Size label
-            painter.setFont(label_font)
-            painter.setPen(text_muted)
-            painter.drawText(QRectF(pad, y_cursor, content_w, 14), Qt.AlignmentFlag.AlignLeft, label)
-            y_cursor += 16
+        mono_metrics = painter.fontMetrics()
 
-            # Pangram
-            sample_font = QFont(self._font_name, size)
-            painter.setFont(sample_font)
-            painter.setPen(text_primary)
-            sfm = painter.fontMetrics()
-            br = sfm.boundingRect(QRectF(pad, y_cursor, content_w, 100).toRect(),
-                                  Qt.TextFlag.TextWordWrap, pangram)
-            painter.drawText(QRectF(pad, y_cursor, content_w, br.height() + 4),
-                             Qt.TextFlag.TextWordWrap, pangram)
-            y_cursor += br.height() + 14
+        painter.drawText(
+            QRectF(
+                horizontal_pad,
+                y,
+                content_width,
+                mono_metrics.height() + 6
+            ),
+            Qt.AlignmentFlag.AlignLeft
+            | Qt.AlignmentFlag.AlignVCenter,
+            "↑  ↓  ←  →     ENTER     ESC     TAB"
+        )
+
+        # --------------------------------------------------------
+        # Package identifier / footer typography
+        # --------------------------------------------------------
+
+        footer_font = self._make_font(
+            self._typography["footer"]
+        )
+
+        painter.setFont(footer_font)
+        painter.setPen(muted)
+
+        footer_metrics = painter.fontMetrics()
+
+        painter.drawText(
+            QRectF(
+                horizontal_pad,
+                height
+                - vertical_pad
+                - footer_metrics.height(),
+                content_width,
+                footer_metrics.height()
+            ),
+            Qt.AlignmentFlag.AlignRight
+            | Qt.AlignmentFlag.AlignVCenter,
+            self._font_package
+        )
 
         painter.end()
+
+    # ============================================================
+    # Helpers
+    # ============================================================
+
+    def _make_font(
+        self,
+        size: int,
+        weight: QFont.Weight = QFont.Weight.Normal
+    ) -> QFont:
+
+        font = QFont(
+            self._font_family,
+            size
+        )
+
+        font.setWeight(weight)
+
+        return font

@@ -216,16 +216,19 @@ class Viewport(Panel):
 
             case "ascii":
 
+                self.ascii_renderer.show()
+
                 self.ascii_renderer.show_content(
                     wallpaper["path"]
                 )
 
             case "image":
 
+                self.image_renderer.show()
+
                 self.image_renderer.show_content(
                     wallpaper["path"]
-                )
-
+                )   
     def current_category(self):
 
         return self.wallpaper_types[
@@ -384,8 +387,10 @@ class Viewport(Panel):
     def hide_all_displays(self):
 
         self.ascii_renderer.clear()
+        self.ascii_renderer.hide()
 
         self.image_renderer.clear()
+        self.image_renderer.hide()
 
     def show_preview(self, widget):
         """Display custom preview content inside the viewport."""
@@ -393,25 +398,28 @@ class Viewport(Panel):
         self.hide_all_displays()
 
         if self.preview is not None:
-            self.preview.setParent(None)
+            self.hide_preview()
 
         self.preview = widget
 
         self.content_layout.insertWidget(
             2,
             widget,
-            alignment=Qt.AlignmentFlag.AlignCenter
+            1
         )
 
 
     def hide_preview(self):
-        """Remove the hosted preview."""
+        """Remove hosted application content from the viewport."""
 
         if self.preview is None:
             return
 
-        self.preview.setParent(None)
+        self.content_layout.removeWidget(
+            self.preview
+        )
 
+        self.preview.setParent(None)
         self.preview = None
 
     def set_title(

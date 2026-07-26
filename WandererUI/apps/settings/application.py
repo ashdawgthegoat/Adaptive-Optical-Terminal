@@ -3,8 +3,8 @@ from core.desktop_extension import DesktopApplication
 from apps.settings.models.state import SECTIONS
 from apps.settings.models.staged_settings import StagedSettings
 from apps.settings.models.state import SECTIONS, SECTION_REGISTRY
-from apps.settings.preview.theme_preview import ThemePreview
 from apps.settings.preview.placeholder_preview import PlaceholderPreview
+from apps.settings.preview_panel import PreviewPanel
 
 
 class SettingsApplication(DesktopApplication):
@@ -27,7 +27,10 @@ class SettingsApplication(DesktopApplication):
 
         self.initialize_appearance_state()
 
-        self.theme_preview = ThemePreview()
+        self.preview_panel = PreviewPanel()
+        self.preview_panel.set_staged_settings(
+            self.staged_settings
+        )
 
         self.placeholder_previews = {}
 
@@ -118,14 +121,17 @@ class SettingsApplication(DesktopApplication):
 
         if self.current_section == "Appearance":
 
-            self.theme_preview.set_theme(
-                self.staged_settings.get_effective(
-                    "Appearance",
-                    "Theme"
-                )
+            self.preview_panel.set_section(
+                self.current_section
             )
 
-            return self.theme_preview
+            if self.current_property is not None:
+                self.preview_panel.set_property(
+                    self.current_section,
+                    self.current_property
+                )
+
+            return self.preview_panel
 
         return self.placeholder_previews.get(
             self.current_section

@@ -1,277 +1,411 @@
 """
 Wallpaper preview widget.
 
-Paints procedural gradient wallpapers with decorative elements.
-Each wallpaper is a unique painted composition using QPainter gradients.
+Renders real Wanderer wallpaper assets without modifying
+Maaya's active wallpaper state.
 """
 
-from __future__ import annotations
+from pathlib import Path
 
-import math
-import random
-
-from PyQt6.QtCore import QPointF, QRectF, Qt
+from PyQt6.QtCore import QRectF, Qt
 from PyQt6.QtGui import (
     QColor,
-    QLinearGradient,
+    QFont,
     QPainter,
     QPainterPath,
-    QPen,
-    QRadialGradient,
+    QPixmap,
 )
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QWidget, QSizePolicy
 
 
 class WallpaperPreview(QWidget):
-    """Renders procedural wallpaper previews."""
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    WALLPAPER_ROOT = Path("assets/wallpapers")
+
+    def __init__(
+        self,
+        parent: QWidget | None = None
+    ) -> None:
+
         super().__init__(parent)
-        self._wallpaper = "Midnight Gradient"
-        self._star_seed = 42  # Fixed seed for deterministic stars
-        self.setMinimumSize(300, 300)
-        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-    def set_wallpaper(self, wallpaper_name: str) -> None:
+        self._wallpaper = ""
+        self._wallpaper_path = None
+
+        self.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding
+        )
+
+        self.setMinimumSize(0, 0)
+        self.setFocusPolicy(
+            Qt.FocusPolicy.NoFocus
+        )
+
+    # ---------------------------------------------------------
+    # Public API
+    # ---------------------------------------------------------
+
+    def set_wallpaper(
+        self,
+        wallpaper_name: str
+    ) -> None:
+
         self._wallpaper = wallpaper_name
+        self._wallpaper_path = (
+            self._find_wallpaper(wallpaper_name)
+        )
+
         self.update()
 
-    # ------------------------------------------------------------------ #
+    # ---------------------------------------------------------
+    # Asset resolution
+    # ---------------------------------------------------------
+
+    def _find_wallpaper(
+        self,
+        wallpaper_name: str
+    ) -> Path | None:
+
+        if not wallpaper_name:
+            return None
+
+        if not self.WALLPAPER_ROOT.exists():
+            return None
+
+        for path in self.WALLPAPER_ROOT.rglob(
+            wallpaper_name
+        ):
+            if path.is_file():
+                return path
+
+        return None
+
+    # ---------------------------------------------------------
     # Painting
-    # ------------------------------------------------------------------ #
+    # ---------------------------------------------------------
 
-    def paintEvent(self, _event) -> None:  # noqa: N802
+    def paintEvent(self, _event) -> None:
+
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        w, h = self.width(), self.height()
-        painter.fillRect(0, 0, w, h, QColor("#1a1b26"))
+        painter.setRenderHint(
+            QPainter.RenderHint.Antialiasing
+        )
 
-        # Preview area with monitor frame
-        pad = 20
-        pw, ph = w - pad * 2, h - pad * 2 - 20  # leave room for label
-        px, py = float(pad), float(pad)
+        w = self.width()
+        h = self.height()
 
-        # Outer frame
+        # ---------------------------------------------------------
+        # Preview background
+        # ---------------------------------------------------------
+
+        painter.fillRect(
+            self.rect(),
+            QColor("#000000")
+        )
+
+        # ---------------------------------------------------------
+        # Simulated Wanderer viewport
+        #
+        # Use most of the available PreviewPanel while preserving
+        # some breathing room around the miniature viewport.
+        # ---------------------------------------------------------
+
+        horizontal_margin = max(
+            32,
+            int(w * 0.08)
+        )
+
+        vertical_margin = max(
+            32,
+            int(h * 0.10)
+        )
+
+        label_height = 28
+
+        viewport_rect = QRectF(
+            horizontal_margin,
+            vertical_margin,
+            w - (horizontal_margin * 2),
+            h - (vertical_margin * 2) - label_height
+        )
+
+        # ---------------------------------------------------------
+        # Viewport frame
+        # ---------------------------------------------------------
+
         frame = QPainterPath()
-        frame.addRoundedRect(QRectF(px - 3, py - 3, pw + 6, ph + 6), 10, 10)
-        painter.fillPath(frame, QColor("#3b4261"))
 
-        # Clip to inner area
-        inner = QRectF(px, py, pw, ph)
-        clip = QPainterPath()
-        clip.addRoundedRect(inner, 7, 7)
-        painter.setClipPath(clip)
+        frame.addRoundedRect(
+            viewport_rect,
+            8,
+            8
+        )
 
-        dispatch = {
-            "Midnight Gradient": self._paint_midnight,
-            "Aurora Borealis": self._paint_aurora,
-            "Deep Ocean": self._paint_ocean,
-            "Nebula": self._paint_nebula,
-            "Mountain Dusk": self._paint_mountain,
-            "Cosmic Dust": self._paint_cosmic,
-        }
+        painter.fillPath(
+            frame,
+            QColor("#202020")
+        )
 
-        paint_fn = dispatch.get(self._wallpaper, self._paint_midnight)
-        paint_fn(painter, px, py, pw, ph)
+        # Small inset representing the real viewport content area.
+
+        content_rect = viewport_rect.adjusted(
+            12,
+            12,
+            -12,
+            -12
+        )
+
+        content_clip = QPainterPath()
+
+        content_clip.addRoundedRect(
+            content_rect,
+            5,
+            5
+        )
+
+        painter.setClipPath(
+            content_clip
+        )
+
+        painter.fillRect(
+            content_rect,
+            QColor("#000000")
+        )
+
+        # ---------------------------------------------------------
+        # Wallpaper
+        # ---------------------------------------------------------
+
+        self._paint_wallpaper(
+            painter,
+            content_rect
+        )
 
         painter.setClipping(False)
 
-        # Label
-        painter.setPen(QColor("#565f89"))
-        from PyQt6.QtGui import QFont
-        painter.setFont(QFont("Inter", 10))
+        # ---------------------------------------------------------
+        # Wallpaper identifier
+        # ---------------------------------------------------------
+
+        painter.setPen(
+            QColor("#808080")
+        )
+
+        painter.setFont(
+            QFont("monospace", 10)
+        )
+
         painter.drawText(
-            QRectF(0, h - 22, w, 20),
+            QRectF(
+                0,
+                viewport_rect.bottom() + 8,
+                w,
+                label_height
+            ),
             Qt.AlignmentFlag.AlignCenter,
-            self._wallpaper,
+            self._wallpaper
         )
 
         painter.end()
 
-    # ------------------------------------------------------------------ #
-    # Individual wallpapers
-    # ------------------------------------------------------------------ #
+    # ---------------------------------------------------------
+    # Wallpaper rendering
+    # ---------------------------------------------------------
 
-    def _paint_midnight(self, p: QPainter, x: float, y: float, w: float, h: float) -> None:
-        grad = QLinearGradient(x, y, x, y + h)
-        grad.setColorAt(0.0, QColor("#0f0c29"))
-        grad.setColorAt(0.5, QColor("#302b63"))
-        grad.setColorAt(1.0, QColor("#24243e"))
-        p.fillRect(QRectF(x, y, w, h), grad)
-
-        # Subtle radial glow
-        glow = QRadialGradient(QPointF(x + w * 0.5, y + h * 0.35), w * 0.6)
-        c = QColor("#7aa2f7")
-        c.setAlpha(30)
-        glow.setColorAt(0.0, c)
-        c2 = QColor("#7aa2f7")
-        c2.setAlpha(0)
-        glow.setColorAt(1.0, c2)
-        p.fillRect(QRectF(x, y, w, h), glow)
-
-    def _paint_aurora(self, p: QPainter, x: float, y: float, w: float, h: float) -> None:
-        # Base gradient
-        grad = QLinearGradient(x, y, x, y + h)
-        grad.setColorAt(0.0, QColor("#0f2027"))
-        grad.setColorAt(0.5, QColor("#203a43"))
-        grad.setColorAt(1.0, QColor("#2c5364"))
-        p.fillRect(QRectF(x, y, w, h), grad)
-
-        # Aurora bands
-        p.setPen(Qt.PenStyle.NoPen)
-        for i in range(5):
-            band_y = y + h * (0.15 + i * 0.12)
-            band_path = QPainterPath()
-            band_path.moveTo(x, band_y)
-            steps = 20
-            for s in range(steps + 1):
-                sx = x + (w / steps) * s
-                sy = band_y + math.sin(s * 0.8 + i * 1.5) * h * 0.06
-                band_path.lineTo(sx, sy)
-            band_path.lineTo(x + w, y + h)
-            band_path.lineTo(x, y + h)
-            band_path.closeSubpath()
-
-            colors = ["#73daca", "#9ece6a", "#7dcfff", "#bb9af7", "#7aa2f7"]
-            c = QColor(colors[i % len(colors)])
-            c.setAlpha(25 + i * 5)
-            p.setBrush(c)
-            p.drawPath(band_path)
-
-        # Stars
-        self._paint_stars(p, x, y, w, h, count=30, max_alpha=120)
-
-    def _paint_ocean(self, p: QPainter, x: float, y: float, w: float, h: float) -> None:
-        grad = QLinearGradient(x, y, x, y + h)
-        grad.setColorAt(0.0, QColor("#000046"))
-        grad.setColorAt(1.0, QColor("#1cb5e0"))
-        p.fillRect(QRectF(x, y, w, h), grad)
-
-        # Wave patterns
-        p.setPen(Qt.PenStyle.NoPen)
-        for i in range(4):
-            wave_y = y + h * (0.55 + i * 0.1)
-            wave = QPainterPath()
-            wave.moveTo(x, wave_y)
-            steps = 30
-            for s in range(steps + 1):
-                sx = x + (w / steps) * s
-                sy = wave_y + math.sin(s * 0.5 + i * 2.0) * h * 0.03
-                wave.lineTo(sx, sy)
-            wave.lineTo(x + w, y + h)
-            wave.lineTo(x, y + h)
-            wave.closeSubpath()
-            c = QColor("#1cb5e0")
-            c.setAlpha(15 + i * 8)
-            p.setBrush(c)
-            p.drawPath(wave)
-
-    def _paint_nebula(self, p: QPainter, x: float, y: float, w: float, h: float) -> None:
-        grad = QLinearGradient(x, y, x + w, y + h)
-        grad.setColorAt(0.0, QColor("#141e30"))
-        grad.setColorAt(0.5, QColor("#6b2fa0"))
-        grad.setColorAt(1.0, QColor("#e44d26"))
-        p.fillRect(QRectF(x, y, w, h), grad)
-
-        # Nebula glow spots
-        spots = [
-            (0.3, 0.4, 0.3, "#bb9af7", 35),
-            (0.7, 0.6, 0.25, "#f7768e", 30),
-            (0.5, 0.3, 0.2, "#e0af68", 25),
-        ]
-        for sx, sy, sr, color, alpha in spots:
-            glow = QRadialGradient(QPointF(x + w * sx, y + h * sy), w * sr)
-            c = QColor(color)
-            c.setAlpha(alpha)
-            glow.setColorAt(0.0, c)
-            c2 = QColor(color)
-            c2.setAlpha(0)
-            glow.setColorAt(1.0, c2)
-            p.fillRect(QRectF(x, y, w, h), glow)
-
-        self._paint_stars(p, x, y, w, h, count=60, max_alpha=200)
-
-    def _paint_mountain(self, p: QPainter, x: float, y: float, w: float, h: float) -> None:
-        # Sky gradient
-        grad = QLinearGradient(x, y, x, y + h)
-        grad.setColorAt(0.0, QColor("#e94560"))
-        grad.setColorAt(0.3, QColor("#16213e"))
-        grad.setColorAt(1.0, QColor("#1a1a2e"))
-        p.fillRect(QRectF(x, y, w, h), grad)
-
-        # Sun/glow
-        sun = QRadialGradient(QPointF(x + w * 0.5, y + h * 0.35), w * 0.25)
-        sc = QColor("#e94560")
-        sc.setAlpha(60)
-        sun.setColorAt(0.0, sc)
-        sc2 = QColor("#e94560")
-        sc2.setAlpha(0)
-        sun.setColorAt(1.0, sc2)
-        p.fillRect(QRectF(x, y, w, h), sun)
-
-        # Mountain silhouettes (3 layers)
-        mountains = [
-            (0.55, [(0, 0.9), (0.15, 0.55), (0.35, 0.7), (0.5, 0.45), (0.65, 0.65), (0.85, 0.5), (1.0, 0.85)], "#0a0a1a"),
-            (0.65, [(0, 0.95), (0.2, 0.65), (0.4, 0.75), (0.55, 0.6), (0.75, 0.7), (0.9, 0.62), (1.0, 0.9)], "#10101e"),
-            (0.75, [(0, 1.0), (0.1, 0.78), (0.3, 0.82), (0.5, 0.72), (0.7, 0.8), (0.85, 0.75), (1.0, 0.95)], "#161628"),
-        ]
-        p.setPen(Qt.PenStyle.NoPen)
-        for _base_y, points, color in mountains:
-            mt = QPainterPath()
-            mt.moveTo(x, y + h)
-            for px_frac, py_frac in points:
-                mt.lineTo(x + w * px_frac, y + h * py_frac)
-            mt.lineTo(x + w, y + h)
-            mt.closeSubpath()
-            p.setBrush(QColor(color))
-            p.drawPath(mt)
-
-        self._paint_stars(p, x, y, w, h * 0.5, count=25, max_alpha=150)
-
-    def _paint_cosmic(self, p: QPainter, x: float, y: float, w: float, h: float) -> None:
-        grad = QLinearGradient(x, y, x, y + h)
-        grad.setColorAt(0.0, QColor("#0a0a0a"))
-        grad.setColorAt(0.5, QColor("#1a0a2e"))
-        grad.setColorAt(1.0, QColor("#2d1b69"))
-        p.fillRect(QRectF(x, y, w, h), grad)
-
-        # Cosmic dust clouds
-        dust = [
-            (0.3, 0.5, 0.4, "#bb9af7", 20),
-            (0.7, 0.4, 0.35, "#7aa2f7", 15),
-        ]
-        for dx, dy, dr, color, alpha in dust:
-            glow = QRadialGradient(QPointF(x + w * dx, y + h * dy), w * dr)
-            c = QColor(color)
-            c.setAlpha(alpha)
-            glow.setColorAt(0.0, c)
-            c2 = QColor(color)
-            c2.setAlpha(0)
-            glow.setColorAt(1.0, c2)
-            p.fillRect(QRectF(x, y, w, h), glow)
-
-        self._paint_stars(p, x, y, w, h, count=80, max_alpha=220)
-
-    # ------------------------------------------------------------------ #
-    # Helpers
-    # ------------------------------------------------------------------ #
-
-    def _paint_stars(
+    def _paint_wallpaper(
         self,
-        p: QPainter,
-        x: float, y: float, w: float, h: float,
-        count: int = 40,
-        max_alpha: int = 180,
+        painter: QPainter,
+        rect: QRectF
     ) -> None:
-        """Paint deterministic scattered stars."""
-        rng = random.Random(self._star_seed)
-        p.setPen(Qt.PenStyle.NoPen)
-        for _ in range(count):
-            sx = x + rng.random() * w
-            sy = y + rng.random() * h
-            sr = rng.uniform(0.5, 2.0)
-            alpha = rng.randint(60, max_alpha)
-            c = QColor(255, 255, 255, alpha)
-            p.setBrush(c)
-            p.drawEllipse(QRectF(sx - sr, sy - sr, sr * 2, sr * 2))
+
+        path = self._wallpaper_path
+
+        if path is None:
+            self._paint_missing(
+                painter,
+                rect
+            )
+            return
+
+        suffix = path.suffix.lower()
+
+        if suffix == ".txt":
+
+            self._paint_ascii(
+                painter,
+                rect,
+                path
+            )
+
+        elif suffix in {
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".webp"
+        }:
+
+            self._paint_image(
+                painter,
+                rect,
+                path
+            )
+
+        else:
+
+            self._paint_missing(
+                painter,
+                rect
+            )
+
+    # ---------------------------------------------------------
+    # ASCII
+    # ---------------------------------------------------------
+
+    def _paint_ascii(
+        self,
+        painter: QPainter,
+        rect: QRectF,
+        path: Path
+    ) -> None:
+
+        try:
+            text = path.read_text(
+                encoding="utf-8"
+            )
+
+        except Exception:
+
+            self._paint_missing(
+                painter,
+                rect
+            )
+
+            return
+
+        lines = text.splitlines()
+
+        if not lines:
+            return
+
+        # ---------------------------------------------------------
+        # Simulate the real Viewport's typography.
+        #
+        # The actual AsciiRenderer uses Maaya's BODY_SIZE and
+        # centers the QLabel. Preview uses a proportional miniature
+        # equivalent instead of forcing the entire ASCII file to
+        # fit into the available rectangle.
+        # ---------------------------------------------------------
+
+        reference_height = 700.0
+        reference_font_size = 14.0
+
+        scale = (
+            rect.height()
+            / reference_height
+        )
+
+        font_size = max(
+            5.0,
+            reference_font_size * scale
+        )
+
+        font = QFont(
+            "monospace"
+        )
+
+        font.setStyleHint(
+            QFont.StyleHint.Monospace
+        )
+
+        font.setPointSizeF(
+            font_size
+        )
+
+        painter.setFont(font)
+
+        painter.setPen(
+            QColor("#d0d0d0")
+        )
+
+        painter.drawText(
+            rect,
+            Qt.AlignmentFlag.AlignCenter,
+            text
+        )
+
+    # ---------------------------------------------------------
+    # Image
+    # ---------------------------------------------------------
+
+    def _paint_image(
+        self,
+        painter: QPainter,
+        rect: QRectF,
+        path: Path
+    ) -> None:
+
+        pixmap = QPixmap(
+            str(path)
+        )
+
+        if pixmap.isNull():
+            self._paint_missing(
+                painter,
+                rect
+            )
+            return
+
+        scaled = pixmap.scaled(
+            int(rect.width()),
+            int(rect.height()),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
+
+        x = (
+            rect.x()
+            + (
+                rect.width()
+                - scaled.width()
+            ) / 2
+        )
+
+        y = (
+            rect.y()
+            + (
+                rect.height()
+                - scaled.height()
+            ) / 2
+        )
+
+        painter.drawPixmap(
+            int(x),
+            int(y),
+            scaled
+        )
+
+    # ---------------------------------------------------------
+    # Fallback
+    # ---------------------------------------------------------
+
+    def _paint_missing(
+        self,
+        painter: QPainter,
+        rect: QRectF
+    ) -> None:
+
+        painter.setPen(
+            QColor("#666666")
+        )
+
+        painter.setFont(
+            QFont("monospace", 10)
+        )
+
+        painter.drawText(
+            rect,
+            Qt.AlignmentFlag.AlignCenter,
+            "Preview unavailable"
+        )

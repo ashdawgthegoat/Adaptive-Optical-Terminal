@@ -429,6 +429,9 @@ class Desktop(QWidget):
         if app_id is not None:
             self.animus.close(app_id)
 
+        # Remove application-owned viewport content
+        self.viewport.hide_preview()
+
         # Restore normal desktop presentation
         self.restore_desktop_state()
 
