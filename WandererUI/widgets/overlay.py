@@ -78,9 +78,18 @@ class Overlay(Panel):
 
             prefix = ">" if i == self.index else " "
 
-            lines.append(f"{prefix} {item}")
+            if isinstance(item, dict):
+                label = item.get("name", str(item))
+            else:
+                label = str(item)
 
-        self.list.setText("\n".join(lines))
+            lines.append(
+                f"{prefix} {label}"
+            )
+
+        self.list.setText(
+            "\n".join(lines)
+        )
 
     def refresh_presentation(self):
 

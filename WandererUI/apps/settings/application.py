@@ -332,7 +332,11 @@ class SettingsApplication(DesktopApplication):
                    "name": (
                         f"{marker} {ssid}    "
                         f"{strength}% {security}"
-                    )
+                    ),
+                    "ssid": ssid,
+                    "strength": strength,
+                    "secured": secured,
+                    "connected": connected,
                 })
 
             if not options:
@@ -418,6 +422,46 @@ class SettingsApplication(DesktopApplication):
                 return
             
             if self.current_property == "Network":
+
+                if not isinstance(value, dict):
+                    return
+
+                ssid = value.get("ssid")
+
+                if not ssid:
+                    return
+
+                # Already connected.
+                if value.get("connected"):
+                    return
+
+                saved = self.nikola.saved_network(
+                    ssid
+                )
+
+                if saved is not None:
+
+                    if not self.nikola.connect_saved_network(
+                        ssid
+                    ):
+                        print(
+                            "[Settings] Failed to connect "
+                            "to saved network:",
+                            repr(ssid)
+                        )
+                        return
+
+                    if self.desktop is not None:
+                        self.desktop.refresh_application()
+
+                    return
+
+                print(
+                    "[Settings] Network requires "
+                    "new connection:",
+                    repr(ssid)
+                )
+
                 return
 
         self.staged_settings.stage(

@@ -2,6 +2,7 @@ from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt6.QtDBus import (
     QDBusConnection,
     QDBusInterface,
+    QDBusObjectPath,
     QDBusVariant,
 )
 
@@ -44,6 +45,18 @@ class Nikola(QObject):
     )
 
     WIFI_DEVICE_TYPE = 2
+
+    SETTINGS_PATH = (
+        "/org/freedesktop/NetworkManager/Settings"
+    )
+
+    SETTINGS_INTERFACE = (
+        "org.freedesktop.NetworkManager.Settings"
+    )
+
+    CONNECTION_INTERFACE = (
+        "org.freedesktop.NetworkManager.Settings.Connection"
+    )
 
     def __init__(self):
 
@@ -315,6 +328,155 @@ class Nikola(QObject):
                 network["ssid"].lower()
             )
         )
+
+    def saved_networks(self) -> list[dict]:
+        """
+        Return saved NetworkManager Wi-Fi connection profiles.
+
+        SSIDs are preserved exactly as stored by NetworkManager.
+        """
+
+        reply = self._call(
+            self.SETTINGS_PATH,
+            self.SETTINGS_INTERFACE,
+            "ListConnections"
+        )
+
+        if reply is None:
+            return []
+
+        arguments = reply.arguments()
+
+        if not arguments:
+            return []
+
+        connection_paths = arguments[0]
+
+        networks = []
+
+        for connection_path in connection_paths:
+
+            connection_path = str(
+                connection_path
+            )
+
+            reply = self._call(
+                connection_path,
+                self.CONNECTION_INTERFACE,
+                "GetSettings"
+            )
+
+            if reply is None:
+                continue
+
+            arguments = reply.arguments()
+
+            if not arguments:
+                continue
+
+            settings = arguments[0]
+
+            connection = settings.get(
+                "connection",
+                {}
+            )
+
+            wireless = settings.get(
+                "802-11-wireless",
+                {}
+            )
+
+            connection_type = connection.get(
+                "type"
+            )
+
+            if connection_type != "802-11-wireless":
+                continue
+
+            uuid = connection.get(
+                "uuid"
+            )
+
+            ssid = self._decode_ssid(
+                wireless.get("ssid")
+            )
+
+            if not uuid or ssid is None:
+                continue
+
+            networks.append({
+                "ssid": ssid,
+                "uuid": str(uuid),
+                "path": connection_path,
+            })
+
+        return networks
+
+    def saved_network(
+        self,
+        ssid: str
+    ) -> dict | None:
+        """
+        Return the saved Wi-Fi profile matching an SSID.
+        """
+
+        for network in self.saved_networks():
+
+            if network["ssid"] == ssid:
+                return network
+
+        return None
+
+    def connect_saved_network(
+        self,
+        ssid: str
+    ) -> bool:
+        """
+        Activate an existing saved Wi-Fi connection profile.
+
+        NetworkManager remains responsible for stored credentials.
+        """
+
+        network = self.saved_network(
+            ssid
+        )
+
+        if network is None:
+
+            print(
+                "[Nikola] No saved Wi-Fi profile for:",
+                repr(ssid)
+            )
+
+            return False
+
+        device_path = self._wifi_device()
+
+        if device_path is None:
+
+            print(
+                "[Nikola] No Wi-Fi device available."
+            )
+
+            return False
+
+        reply = self._call(
+            self.MANAGER_PATH,
+            self.MANAGER_INTERFACE,
+            "ActivateConnection",
+            QDBusObjectPath(
+                network["path"]
+            ),
+            QDBusObjectPath(
+                device_path
+            ),
+            QDBusObjectPath("/")
+        )
+
+        if reply is None:
+            return False
+
+        return True
 
     # ============================================================
     # NetworkManager discovery
